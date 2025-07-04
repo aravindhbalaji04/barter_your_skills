@@ -218,7 +218,7 @@
 <body>
   <div class="feed-container">
     <h1>
-      <a href="messages.html" id="messagesLink" class="messages-btn">
+      <a href="#" id="messagesLink" class="messages-btn">
         <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M20 2H4C2.897 2 2 2.897 2 4v16c0 1.103 0.897 2 2 2h16c1.103 0 2-0.897 2-2V4C22 2.897 21.103 2 20 2zM20 4v0.511l-8 6.222-8-6.222V4H20zM4 20V6.489l7.445 5.792c0.36 0.28 0.75 0.419 1.14 0.419s0.78-0.139 1.14-0.419L20 6.489V20H4z"/></svg>
         Messages
         <span class="messages-badge" id="messagesBadge" style="display:none;">0</span>
@@ -335,7 +335,9 @@
       filteredProfiles.forEach(profile => {
         const card = document.createElement('div');
         card.className = 'profile-card';
-        card.onclick = () => {
+        card.onclick = (e) => {
+          // Only trigger if not clicking DM button
+          if (e.target.classList.contains('dm-btn')) return;
           window.location.href = `profile.html?user=${profile.username}`;
         };
         card.innerHTML = `
@@ -351,6 +353,17 @@
         `;
         grid.appendChild(card);
       });
+    }
+    // Start DM with a user
+    function startDM(username) {
+      let currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        currentUser = prompt('Enter your username:');
+        if (!currentUser) return;
+        localStorage.setItem('currentUser', currentUser);
+      }
+      // Go to messages.html with the other user
+      window.location.href = `messages.html?user=${username}`;
     }
 
     function filterAndSortProfiles() {
@@ -384,6 +397,18 @@
     serviceSelect.addEventListener('change', filterAndSortProfiles);
     skillSelect.addEventListener('change', filterAndSortProfiles);
     sortSelect.addEventListener('change', filterAndSortProfiles);
+
+    // Messages button in header: open messages page for current user
+    document.getElementById('messagesLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      let currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        currentUser = prompt('Enter your username:');
+        if (!currentUser) return;
+        localStorage.setItem('currentUser', currentUser);
+      }
+      window.location.href = `messages.html`;
+    });
 
     // Dummy unanswered DMs count
     const unansweredDMs = 3; // Replace with real value from backend
