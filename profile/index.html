@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dummy Payment Gateway</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background: linear-gradient(120deg, #f8fafc 0%, #e0c3fc 100%);
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 420px;
+      width: 100%;
+      background: #fff;
+      padding: 38px 32px 28px 32px;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px #b39ddb33, 0 1.5px 8px #0001;
+      border: 1.5px solid #e0c3fc;
+      position: relative;
+      overflow: hidden;
+    }
+    .container:before {
+      content: '';
+      position: absolute;
+      top: -60px; left: -60px;
+      width: 180px; height: 180px;
+      background: linear-gradient(135deg, #b39ddb 0%, #fff 100%);
+      opacity: 0.13;
+      border-radius: 50%;
+      z-index: 0;
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+      z-index: 1;
+      position: relative;
+    }
+    .logo img {
+      width: 60px;
+      height: 60px;
+      filter: drop-shadow(0 2px 8px #b39ddb33);
+    }
+    h2 {
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      color: #5e548e;
+      margin-bottom: 8px;
+      font-size: 2.1rem;
+      letter-spacing: 1px;
+      z-index: 1;
+      position: relative;
+    }
+    .secure {
+      text-align: center;
+      color: #4f8a10;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      z-index: 1;
+      position: relative;
+    }
+    .secure svg {
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      color: #5e548e;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      z-index: 1;
+      position: relative;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: 1.5px solid #b39ddb;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #f8fafc;
+      transition: border 0.2s, box-shadow 0.2s;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    input:focus {
+      border: 1.5px solid #5e548e;
+      outline: none;
+      box-shadow: 0 0 0 2px #e0c3fc55;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+    }
+    .row label {
+      flex: 1;
+      margin-top: 0;
+    }
+    button {
+      margin-top: 32px;
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(90deg, #5e548e 0%, #b39ddb 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #b39ddb33;
+      transition: background 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.5px;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #b39ddb 0%, #5e548e 100%);
+      box-shadow: 0 4px 16px #b39ddb33;
+    }
+    .result {
+      margin-top: 26px;
+      text-align: center;
+      font-size: 17px;
+      font-weight: 500;
+      z-index: 1;
+      position: relative;
+    }
+    .card-icons {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 2px;
+      z-index: 1;
+      position: relative;
+    }
+    .card-icons img {
+      width: 36px;
+      height: 24px;
+      opacity: 0.85;
+      filter: grayscale(0.2) drop-shadow(0 1px 2px #b39ddb22);
+    }
+    .footer {
+      text-align: center;
+      margin-top: 36px;
+      color: #b39ddb;
+      font-size: 14px;
+      font-family: 'Playfair Display', serif;
+      letter-spacing: 0.5px;
+      z-index: 1;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://img.icons8.com/fluency/96/lock-2.png" alt="Secure Payment" />
+    </div>
+    <h2>Payment</h2>
+    <div class="secure">
+      <svg fill="#4f8a10" viewBox="0 0 24 24"><path d="M12 1a7 7 0 0 0-7 7v4.09A7 7 0 0 0 5 13v5a5 5 0 0 0 10 0v-5a7 7 0 0 0 0-1.91V8a7 7 0 0 0-7-7zm0 2a5 5 0 0 1 5 5v4.09A7 7 0 0 0 12 3zm0 18a3 3 0 0 1-3-3v-5a7 7 0 0 0 6 0v5a3 3 0 0 1-3 3z"/></svg>
+      256-bit SSL Secured
+    </div>
+    <form id="paymentForm" autocomplete="off">
+      <label>Card Number
+        <input type="text" id="cardNumber" maxlength="19" placeholder="1234 5678 9012 3456" required pattern="[0-9 ]{12,19}" />
+        <div class="card-icons">
+          <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" />
+          <img src="https://img.icons8.com/color/48/mastercard-logo.png" alt="Mastercard" />
+          <img src="https://img.icons8.com/color/48/amex.png" alt="Amex" />
+        </div>
+      </label>
+      <div class="row">
+        <label>Expiry (MM/YY)
+          <input type="text" id="expiry" maxlength="5" placeholder="MM/YY" required pattern="\d{2}/\d{2}" />
+        </label>
+        <label>CVV
+          <input type="password" id="cvv" maxlength="4" placeholder="123" required pattern="\d{3,4}" />
+        </label>
+      </div>
+      <label>Amount
+        <input type="number" id="amount" min="1" placeholder="Amount" required />
+      </label>
+      <button type="submit">Pay Now</button>
+    </form>
+    <div class="result" id="result"></div>
+    <div class="footer">Powered by Dummy Gateway &copy; 2025</div>
+  </div>
+  <script>
+    // Format card number input
+    document.getElementById('cardNumber').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      value = value.substring(0, 16);
+      e.target.value = value.replace(/(.{4})/g, '$1 ').trim();
+    });
+    // Format expiry input
+    document.getElementById('expiry').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 2) value = value.substring(0,2) + '/' + value.substring(2,4);
+      e.target.value = value.substring(0,5);
+    });
+    document.getElementById('paymentForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+      const expiry = document.getElementById('expiry').value;
+      const cvv = document.getElementById('cvv').value;
+      const amount = document.getElementById('amount').value;
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = 'Processing...';
+      resultDiv.style.color = '#5e548e';
+      try {
+        const res = await fetch('http://localhost:3001/pay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardNumber, expiry, cvv, amount })
+        });
+        const data = await res.json();
+        if (data.success) {
+          resultDiv.textContent = data.message;
+          resultDiv.style.color = '#4f8a10';
+        } else {
+          resultDiv.textContent = data.message;
+          resultDiv.style.color = '#d7263d';
+        }
+      } catch (err) {
+        resultDiv.textContent = 'Error connecting to server.';
+        resultDiv.style.color = '#d7263d';
+      }
+    };
+  </script>
+</body>
+</html>

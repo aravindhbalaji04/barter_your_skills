@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile | Barter Your Skills</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(120deg, #f8fafc 0%, #e0c3fc 100%);
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .profile-container {
+      max-width: 720px;
+      width: 100%;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px #b39ddb33, 0 1.5px 8px #0001;
+      padding: 38px 36px 28px 36px;
+      border: 1.5px solid #e0c3fc;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-container:before {
+      content: '';
+      position: absolute;
+      top: -60px; left: -60px;
+      width: 200px; height: 200px;
+      background: linear-gradient(135deg, #b39ddb 0%, #fff 100%);
+      opacity: 0.13;
+      border-radius: 50%;
+      z-index: 0;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 22px;
+      z-index: 1;
+      position: relative;
+    }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #b39ddb;
+      background: #e0e7ff;
+      box-shadow: 0 2px 12px #b39ddb22;
+    }
+    .profile-info {
+      flex: 1;
+    }
+    .profile-name {
+      font-size: 2.1rem;
+      font-family: 'Roboto', Arial, sans-serif;
+      font-weight: 700;
+      color: #5e548e;
+      margin-bottom: 2px;
+      letter-spacing: 0.5px;
+    }
+    .profile-username {
+      color: #b39ddb;
+      font-size: 1.15rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .profile-username button {
+      background: linear-gradient(90deg, #5e548e 0%, #b39ddb 100%);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 14px;
+      font-size: 1rem;
+      margin-left: 4px;
+      cursor: pointer;
+      font-family: 'Roboto', Arial, sans-serif;
+      font-weight: 500;
+      transition: background 0.2s;
+      box-shadow: 0 1px 4px #b39ddb22;
+    }
+    .profile-username button:hover {
+      background: linear-gradient(90deg, #b39ddb 0%, #5e548e 100%);
+    }
+    .profile-skillset, .profile-services {
+      margin-top: 12px;
+      color: #444;
+      font-size: 1.08rem;
+    }
+    .profile-skillset span, .profile-services span {
+      background: #e0e7ff;
+      color: #5e548e;
+      border-radius: 5px;
+      padding: 3px 10px;
+      margin-right: 7px;
+      font-size: 1rem;
+      display: inline-block;
+      margin-bottom: 4px;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    .profile-merit {
+      margin-top: 16px;
+      font-size: 1.13rem;
+      color: #22223b;
+      font-weight: 500;
+    }
+    .profile-merit .score {
+      color: #b39ddb;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-left: 7px;
+    }
+    .profile-section {
+      margin-top: 32px;
+      z-index: 1;
+      position: relative;
+    }
+    .section-title {
+      font-size: 1.18rem;
+      font-family: 'Roboto', Arial, sans-serif;
+      font-weight: 700;
+      color: #5e548e;
+      margin-bottom: 12px;
+      letter-spacing: 0.2px;
+    }
+    .reviews {
+      margin-top: 8px;
+    }
+    .review {
+      background: #f8fafc;
+      border-radius: 7px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      border-left: 4px solid #b39ddb;
+      box-shadow: 0 1px 4px #b39ddb11;
+    }
+    .reviewer {
+      font-weight: 600;
+      color: #5e548e;
+      font-size: 1rem;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    .review-rating {
+      color: #f59e42;
+      font-size: 1.13rem;
+      margin-left: 10px;
+    }
+    .collaborators {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .collaborator {
+      background: #e0e7ff;
+      color: #5e548e;
+      border-radius: 5px;
+      padding: 5px 13px;
+      font-size: 1rem;
+      font-weight: 500;
+      font-family: 'Roboto', Arial, sans-serif;
+      box-shadow: 0 1px 4px #b39ddb11;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 38px;
+      color: #b39ddb;
+      font-size: 14px;
+      font-family: 'Playfair Display', serif;
+      letter-spacing: 0.5px;
+      z-index: 1;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <div class="profile-header">
+      <img class="profile-pic" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile Picture">
+      <div class="profile-info">
+        <div class="profile-name">John Doe</div>
+        <div class="profile-username">
+          @johndoe
+          <button onclick="window.location.href = '/feed/messages.html?user=johndoe'">DM</button>
+          <button onclick="alert('Connection request sent!')">Connect</button>
+        </div>
+        <div class="profile-skillset">
+          <b>Skillset:</b>
+          <span>Web Development</span>
+          <span>UI/UX Design</span>
+          <span>JavaScript</span>
+        </div>
+        <div class="profile-services">
+          <b>Services:</b>
+          <span>Website Building</span>
+          <span>Design Consultation</span>
+        </div>
+        <div class="profile-merit">
+          Merit Score: <span class="score">92</span>
+        </div>
+      </div>
+    </div>
+    <div class="profile-section">
+      <div class="section-title">Ratings & Reviews</div>
+      <div class="reviews">
+        <div class="review">
+          <span class="reviewer">@janesmith</span>
+          <span class="review-rating">★★★★★</span>
+          <div>Great collaborator! Delivered the project on time and exceeded expectations.</div>
+        </div>
+        <div class="review">
+          <span class="reviewer">@alexbrown</span>
+          <span class="review-rating">★★★★☆</span>
+          <div>Very skilled and easy to work with. Would recommend!</div>
+        </div>
+      </div>
+    </div>
+    <div class="profile-section">
+      <div class="section-title">Currently Collaborating With</div>
+      <div class="collaborators">
+        <div class="collaborator">@janesmith</div>
+        <div class="collaborator">@alexbrown</div>
+        <div class="collaborator">@emilywhite</div>
+      </div>
+    </div>
+    <div class="footer">Barter Your Skills &copy; 2025</div>
+  </div>
+</body>
+</html>
