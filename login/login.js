@@ -1,22 +1,24 @@
-document.getElementById('loginForm').onsubmit = function(e) {
-    e.preventDefault();
-    var user = document.getElementById('user').value;
-    var pass = document.getElementById('password').value;
-    // Check localStorage for registered users
-    var users = JSON.parse(localStorage.getItem('users') || '[]');
-    var found = users.find(u => (u.username === user || u.email === user) && u.password === pass);
-    if(found) {
-        // Save the logged-in user index to localStorage for profile display
-        localStorage.setItem('loggedInUserIndex', users.indexOf(found));
-        window.location.href = 'profile.html';
-    } else {
-        document.getElementById('loginError').innerText = 'Invalid credentials.';
-    }
-};
+// Replace these with your actual values
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key';
 
-function handleGoogleSignIn(response) {
-    // In a real app, send response.credential to backend for verification
-    alert('Google Sign-In successful! (Implement backend logic)');
-    // For demo, just redirect
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    document.getElementById('error').innerText = error.message;
+  } else {
+    alert('Login successful!');
     window.location.href = 'profile.html';
-}
+  }
+});
