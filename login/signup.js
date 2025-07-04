@@ -1,28 +1,60 @@
-document.getElementById('signupForm').onsubmit = function(e) {
-    e.preventDefault();
-    var name = document.getElementById('name').value;
-    var username = document.getElementById('username').value;
-    var email = document.getElementById('email').value;
-    var password = document.getElementById('password').value;
-    var profession = document.getElementById('profession').value;
-    var skillset = document.getElementById('skillset').value;
-    var preferences = Array.from(document.getElementById('preference').selectedOptions).map(opt => opt.value);
-    var users = JSON.parse(localStorage.getItem('users') || '[]');
-    // Prevent duplicate username or email
-    if(users.some(u => u.username === username || u.email === email)) {
-        document.getElementById('signupError').innerText = 'Username or email already exists.';
-        return;
-    }
-    users.push({ name, username, email, password, profession, skillset, preferences });
-    localStorage.setItem('users', JSON.stringify(users));
-    document.getElementById('signupError').style.color = 'green';
-    document.getElementById('signupError').innerText = 'Signup successful! You can now log in.';
-    document.getElementById('signupForm').reset();
-};
+// 1. Get the function from the global Supabase module (already loaded via CDN)
+const { createClient } = supabase;
 
-function handleGoogleSignIn(response) {
-    // In a real app, send response.credential to backend for verification
-    alert('Google Sign-In successful! (Implement backend logic)');
-    // For demo, just redirect
-    window.location.href = 'nextpage.html';
+// 2. Create a Supabase client instance
+const supabaseClient = createClient('https://uyifmxtmfqlojodlrmzu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY');
+
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value;
+  const username = document.getElementById('username').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const contact = document.getElementById('contact').value;
+  const location = document.getElementById('location').value;
+
+  // 1. Sign up the user
+  const { data: signupData, error: signupError } = await supabaseClient.auth.signUp({
+  email,
+  password,
+});
+
+if (signupError) {
+  document.getElementById('error').innerText = signupError.message;
+  return;
 }
+
+// Step 2: Sign in to get session
+const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
+  email,
+  password,
+});
+
+if (loginError) {
+  document.getElementById('error').innerText = loginError.message;
+  return;
+}
+
+// Step 3: Insert profile
+const { user } = loginData;
+const { error: insertError } = await supabaseClient.from('profiles').insert([
+  {
+    id: user.id,
+    name,
+    username,
+    email,
+    contact_no: contact,
+    location,
+  }
+]);
+
+  if (insertError) {
+    document.getElementById('error').innerText = insertError.message;
+    return;
+  }
+
+  alert('Signup successful! Please check your email to confirm.');
+  window.location.href = 'index.html';
+});
+

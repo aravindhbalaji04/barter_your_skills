@@ -1,57 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supabase Signup</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h2>Signup</h2>
+  <div id="signup-container">
+    <h2>Sign Up</h2>
     <form id="signupForm">
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
-
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
-
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
-
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-
-        <label for="profession">Profession:</label><br>
-        <input type="text" id="profession" name="profession" required><br><br>
-
-        <label for="skillset">Skillset:</label><br>
-        <input type="text" id="skillset" name="skillset" required><br><br>
-
-        <label for="preference">Preferences (select multiple):</label><br>
-        <select id="preference" name="preference" multiple required>
-            <option value="web">Web Development</option>
-            <option value="mobile">Mobile Development</option>
-            <option value="design">Design</option>
-            <option value="writing">Writing</option>
-            <option value="marketing">Marketing</option>
-            <option value="other">Other</option>
-        </select><br><br>
-
-        <button type="submit">Sign Up</button>
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <input type="text" id="contact" placeholder="Contact Number" required />
+      <input type="text" id="location" placeholder="Location" required />
+      <button type="submit">Sign Up</button>
+      <p id="error" style="color:red;"></p>
     </form>
-    <br>
-    <div id="g_id_onload"
-         data-client_id="YOUR_GOOGLE_CLIENT_ID"
-         data-context="signup"
-         data-ux_mode="popup"
-         data-callback="handleGoogleSignIn"
-         data-auto_prompt="false">
-    </div>
-    <div class="g_id_signin" data-type="standard"></div>
+    <p>Already have an account? <a href="index.html">Login</a></p>
+  </div>
 
-    <div id="signupError" style="color:red;"></div>
-
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="signup.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="signup.js"></script>
 </body>
 </html>
+

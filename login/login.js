@@ -1,22 +1,25 @@
-document.getElementById('loginForm').onsubmit = function(e) {
-    e.preventDefault();
-    var user = document.getElementById('user').value;
-    var pass = document.getElementById('password').value;
-    // Check localStorage for registered users
-    var users = JSON.parse(localStorage.getItem('users') || '[]');
-    var found = users.find(u => (u.username === user || u.email === user) && u.password === pass);
-    if(found) {
-        // Save the logged-in user index to localStorage for profile display
-        localStorage.setItem('loggedInUserIndex', users.indexOf(found));
-        window.location.href = 'profile.html';
-    } else {
-        document.getElementById('loginError').innerText = 'Invalid credentials.';
-    }
-};
+const { createClient } = supabase;
 
-function handleGoogleSignIn(response) {
-    // In a real app, send response.credential to backend for verification
-    alert('Google Sign-In successful! (Implement backend logic)');
-    // For demo, just redirect
+// 2. Create a Supabase client instance
+const supabaseClient = createClient('https://uyifmxtmfqlojodlrmzu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY');
+
+
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    document.getElementById('error').innerText = error.message;
+  } else {
+    alert('Login successful!');
     window.location.href = 'profile.html';
-}
+  }
+});
