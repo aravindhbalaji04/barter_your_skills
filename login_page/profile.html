@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+</head>
+<body>
+  <h1>Welcome to your profile page!</h1>
+  <p id="user-email">Loading user info...</p>
+  <button onclick="logout()">Logout</button>
+
+  <!-- Load Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // ✅ Step 1: Extract and initialize client
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+      'https://uyifmxtmfqlojodlrmzu.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY'
+    );
+
+    // ✅ Step 2: Fetch user details
+    async function fetchUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error || !data.user) {
+        alert("Not logged in!");
+        window.location.href = "index.html";
+      } else {
+        document.getElementById("user-email").textContent = `Logged in as: ${data.user.email}`;
+      }
+    }
+
+    // ✅ Step 3: Logout function
+    async function logout() {
+      await supabaseClient.auth.signOut();
+      window.location.href = "index.html";
+    }
+
+    // Call on load
+    fetchUser();
+  </script>
+</body>
+</html>
+
