@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feed | Barter Your Skills</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(120deg, #f8fafc 0%, #e0c3fc 100%);
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+    .feed-container {
+      max-width: 1400px;
+      margin: 24px auto;
+      padding: 0 0px;
+    }
+    h1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+    .messages-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #5e548e;
+      color: #fff !important;
+      font-weight: 700;
+      font-size: 1.08rem;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 18px;
+      text-decoration: none;
+      box-shadow: 0 2px 8px #b39ddb22;
+      transition: background 0.18s;
+      position: relative;
+    }
+    .messages-btn:hover {
+      background: #7c6cc5;
+    }
+    .messages-btn svg {
+      vertical-align: middle;
+    }
+    .messages-badge {
+      background: #d7263d;
+      color: #fff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border-radius: 50%;
+      padding: 2px 7px;
+      position: absolute;
+      top: -8px;
+      right: -12px;
+      box-shadow: 0 1px 4px #b39ddb22;
+    }
+    h2 {
+      text-align: center;
+      color: #5e548e;
+      font-size: 2.2rem;
+      margin-bottom: 32px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    #searchBar {
+      width: 100%;
+      max-width: 500px;
+      display: block;
+      margin: 0 auto 32px auto;
+      padding: 12px 16px;
+      font-size: 1.08rem;
+      border-radius: 8px;
+      border: 1.5px solid #b39ddb;
+      box-shadow: 0 1px 4px #b39ddb11;
+      outline: none;
+    }
+    .main-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .sidebar {
+      width: 320px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px #b39ddb11;
+      padding: 28px 20px 20px 20px;
+      border: 1.5px solid #e0c3fc;
+      min-height: 400px;
+      margin-top: 0;
+    }
+    .sidebar h2 {
+      font-size: 1.18rem;
+      color: #5e548e;
+      margin-bottom: 18px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .sidebar label {
+      display: block;
+      margin-bottom: 10px;
+      color: #5e548e;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+    .sidebar select, .sidebar input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 7px;
+      border: 1.5px solid #b39ddb;
+      margin-bottom: 18px;
+      font-size: 1rem;
+      background: #f8fafc;
+      outline: none;
+    }
+    .sidebar .sort-section {
+      margin-top: 24px;
+      border-top: 1px solid #e0c3fc;
+      padding-top: 18px;
+    }
+    .feed-content {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .profiles-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .profile-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px #b39ddb22;
+      padding: 32px 40px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      transition: box-shadow 0.2s, transform 0.2s;
+      cursor: pointer;
+      border: 1.5px solid #e0c3fc;
+      position: relative;
+      min-height: 130px;
+    }
+    .profile-card:hover {
+      box-shadow: 0 8px 32px #b39ddb33, 0 1.5px 8px #0001;
+      transform: translateY(-4px) scale(1.03);
+    }
+    .profile-pic {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #b39ddb;
+      background: #e0e7ff;
+      margin-bottom: 0;
+      margin-right: 24px;
+    }
+    .profile-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profile-name {
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: #5e548e;
+      margin-bottom: 0;
+      text-align: left;
+    }
+    .profile-username, .profile-skillset, .profile-merit {
+      color: #b39ddb;
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .profile-skillset {
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .profile-skillset span {
+      background: #e0e7ff;
+      color: #5e548e;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin: 0 3px 3px 0;
+      font-size: 0.95rem;
+      display: inline-block;
+    }
+    .profile-merit {
+      font-size: 0.98rem;
+      color: #22223b;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .profile-merit .score {
+      color: #b39ddb;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+    @media (max-width: 1200px) {
+      .feed-container { max-width: 100vw; }
+      .sidebar { width: 220px; }
+      .profile-card { padding: 20px 16px; }
+    }
+    @media (max-width: 900px) {
+      .main-layout { flex-direction: column; gap: 0; }
+      .sidebar { width: 100%; margin-bottom: 24px; }
+      .feed-content { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="feed-container">
+    <h1>
+      <a href="messages.html" id="messagesLink" class="messages-btn">
+        <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M20 2H4C2.897 2 2 2.897 2 4v16c0 1.103 0.897 2 2 2h16c1.103 0 2-0.897 2-2V4C22 2.897 21.103 2 20 2zM20 4v0.511l-8 6.222-8-6.222V4H20zM4 20V6.489l7.445 5.792c0.36 0.28 0.75 0.419 1.14 0.419s0.78-0.139 1.14-0.419L20 6.489V20H4z"/></svg>
+        Messages
+        <span class="messages-badge" id="messagesBadge" style="display:none;">0</span>
+      </a>
+      Find People to Barter Skills
+    </h1>
+    <div class="main-layout">
+      <aside class="sidebar">
+        <h2>Categories</h2>
+        <label for="serviceSelect">Service</label>
+        <select id="serviceSelect">
+          <option value="">All Services</option>
+          <option value="Website Building">Website Building</option>
+          <option value="Design Consultation">Design Consultation</option>
+          <option value="Branding">Branding</option>
+          <option value="App Development">App Development</option>
+          <option value="Finance">Finance</option>
+        </select>
+        <label for="skillSelect">Skill</label>
+        <select id="skillSelect">
+          <option value="">All Skills</option>
+          <option value="Web Development">Web Development</option>
+          <option value="UI/UX Design">UI/UX Design</option>
+          <option value="JavaScript">JavaScript</option>
+          <option value="Photoshop">Photoshop</option>
+          <option value="SEO">SEO</option>
+          <option value="Flutter">Flutter</option>
+          <option value="Excel">Excel</option>
+        </select>
+        <div class="sort-section">
+          <h2>Sort By</h2>
+          <select id="sortSelect">
+            <option value="">Default</option>
+            <option value="merit">Merit Score</option>
+            <option value="rating">Ratings</option>
+          </select>
+        </div>
+      </aside>
+      <div class="feed-content">
+        <input type="text" id="searchBar" placeholder="Search by name, username, skill, or service..." />
+        <div class="profiles-grid" id="profilesGrid">
+          <!-- Profiles will be injected here -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Dummy data for demonstration
+    const profiles = [
+      {
+        name: 'John Doe',
+        username: 'johndoe',
+        pic: 'https://randomuser.me/api/portraits/men/32.jpg',
+        skillset: ['Web Development', 'UI/UX Design', 'JavaScript'],
+        services: ['Website Building', 'Design Consultation'],
+        merit: 92,
+        rating: 4.8
+      },
+      {
+        name: 'Jane Smith',
+        username: 'janesmith',
+        pic: 'https://randomuser.me/api/portraits/women/44.jpg',
+        skillset: ['Graphic Design', 'Branding', 'Photoshop'],
+        services: ['Branding', 'Design Consultation'],
+        merit: 88,
+        rating: 4.6
+      },
+      {
+        name: 'Alex Brown',
+        username: 'alexbrown',
+        pic: 'https://randomuser.me/api/portraits/men/54.jpg',
+        skillset: ['Content Writing', 'SEO', 'Copywriting'],
+        services: ['Website Building'],
+        merit: 85,
+        rating: 4.2
+      },
+      {
+        name: 'Emily White',
+        username: 'emilywhite',
+        pic: 'https://randomuser.me/api/portraits/women/68.jpg',
+        skillset: ['Digital Marketing', 'Social Media', 'Analytics'],
+        services: ['Branding'],
+        merit: 90,
+        rating: 4.7
+      },
+      {
+        name: 'Sam Lee',
+        username: 'samlee',
+        pic: 'https://randomuser.me/api/portraits/men/77.jpg',
+        skillset: ['App Development', 'Flutter', 'Firebase'],
+        services: ['App Development'],
+        merit: 80,
+        rating: 4.1
+      },
+      {
+        name: 'Priya Kumar',
+        username: 'priyakumar',
+        pic: 'https://randomuser.me/api/portraits/women/12.jpg',
+        skillset: ['Finance', 'Excel', 'Consulting'],
+        services: ['Finance'],
+        merit: 87,
+        rating: 4.5
+      }
+    ];
+
+    const grid = document.getElementById('profilesGrid');
+    const searchBar = document.getElementById('searchBar');
+    const serviceSelect = document.getElementById('serviceSelect');
+    const skillSelect = document.getElementById('skillSelect');
+    const sortSelect = document.getElementById('sortSelect');
+
+    function renderProfiles(filteredProfiles) {
+      grid.innerHTML = '';
+      filteredProfiles.forEach(profile => {
+        const card = document.createElement('div');
+        card.className = 'profile-card';
+        card.onclick = () => {
+          window.location.href = `profile.html?user=${profile.username}`;
+        };
+        card.innerHTML = `
+          <img class="profile-pic" src="${profile.pic}" alt="${profile.name}">
+          <div class="profile-details">
+            <div class="profile-name">${profile.name}</div>
+            <div class="profile-username">@${profile.username}</div>
+            <div class="profile-skillset">
+              ${profile.skillset.map(skill => `<span>${skill}</span>`).join(' ')}
+            </div>
+            <div class="profile-merit">Merit Score: <span class="score">${profile.merit}</span> | Rating: <span class="score">${profile.rating}</span></div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterAndSortProfiles() {
+      const query = searchBar.value.trim().toLowerCase();
+      const selectedService = serviceSelect.value;
+      const selectedSkill = skillSelect.value;
+      const sortBy = sortSelect.value;
+      let filtered = profiles.filter(profile => {
+        const matchesQuery =
+          !query ||
+          profile.name.toLowerCase().includes(query) ||
+          profile.username.toLowerCase().includes(query) ||
+          profile.skillset.some(skill => skill.toLowerCase().includes(query)) ||
+          profile.services.some(service => service.toLowerCase().includes(query));
+        const matchesService = !selectedService || profile.services.includes(selectedService);
+        const matchesSkill = !selectedSkill || profile.skillset.includes(selectedSkill);
+        return matchesQuery && matchesService && matchesSkill;
+      });
+      if (sortBy === 'merit') {
+        filtered = filtered.sort((a, b) => b.merit - a.merit);
+      } else if (sortBy === 'rating') {
+        filtered = filtered.sort((a, b) => b.rating - a.rating);
+      }
+      renderProfiles(filtered);
+    }
+
+    // Initial render
+    filterAndSortProfiles();
+
+    searchBar.addEventListener('input', filterAndSortProfiles);
+    serviceSelect.addEventListener('change', filterAndSortProfiles);
+    skillSelect.addEventListener('change', filterAndSortProfiles);
+    sortSelect.addEventListener('change', filterAndSortProfiles);
+
+    // Dummy unanswered DMs count
+    const unansweredDMs = 3; // Replace with real value from backend
+    const badge = document.getElementById('messagesBadge');
+    if (unansweredDMs > 0) {
+      badge.textContent = unansweredDMs;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
