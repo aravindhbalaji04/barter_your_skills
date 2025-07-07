@@ -21,6 +21,5 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   } else {
     alert('Login successful!');
     window.location.href = '/feed/feed.html';
-
   }
 });
