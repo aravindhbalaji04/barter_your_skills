@@ -13,6 +13,11 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
   const contact = document.getElementById('contact').value;
   const location = document.getElementById('location').value;
+  // Get skillset and services as arrays (split by comma, trim whitespace)
+  const skillsetInput = document.getElementById('skillset').value;
+  const servicesInput = document.getElementById('services').value;
+  const skillset = skillsetInput.split(',').map(s => s.trim()).filter(Boolean);
+  const services = servicesInput.split(',').map(s => s.trim()).filter(Boolean);
 
   // 1. Sign up the user
   const { data: signupData, error: signupError } = await supabaseClient.auth.signUp({
@@ -38,6 +43,7 @@ if (loginError) {
 
 // Step 3: Insert profile
 const { user } = loginData;
+
 const { error: insertError } = await supabaseClient.from('profiles').insert([
   {
     id: user.id,
@@ -46,6 +52,8 @@ const { error: insertError } = await supabaseClient.from('profiles').insert([
     email,
     contact_no: contact,
     location,
+    skillset, // _text[] in Supabase
+    services_provided: services // _text[] in Supabase
   }
 ]);
 
