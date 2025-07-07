@@ -20,6 +20,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     document.getElementById('error').innerText = error.message;
   } else {
     alert('Login successful!');
-    window.location.href = 'profile.html';
+    window.location.href = '/feed/feed.html';
   }
 });
