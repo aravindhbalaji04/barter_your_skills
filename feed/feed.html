@@ -57,6 +57,25 @@
       right: -12px;
       box-shadow: 0 1px 4px #b39ddb22;
     }
+    .logout-btn {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      background: #d7263d;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(215, 38, 61, 0.2);
+      transition: background 0.18s, transform 0.18s;
+    }
+    .logout-btn:hover {
+      background: #b01e33;
+      transform: translateY(-1px);
+    }
     h2 {
       text-align: center;
       color: #5e548e;
@@ -216,6 +235,7 @@
   </style>
 </head>
 <body>
+  <button class="logout-btn" id="logoutBtn">Logout</button>
   <div class="feed-container">
     <h1>
       <a href="#" id="messagesLink" class="messages-btn">
@@ -419,6 +439,14 @@
     } else {
       badge.style.display = 'none';
     }
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      // Clear any stored user data
+      localStorage.removeItem('currentUser');
+      // Redirect to login page
+      window.location.href = '../login_page/index.html';
+    });
   </script>
 </body>
 </html>
