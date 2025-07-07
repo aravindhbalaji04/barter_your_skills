@@ -13,56 +13,53 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
   const contact = document.getElementById('contact').value;
   const location = document.getElementById('location').value;
-  // Get skillset and services as arrays (split by comma, trim whitespace)
   const skillsetInput = document.getElementById('skillset').value;
   const servicesInput = document.getElementById('services').value;
-  const skillset = skillsetInput.split(',').map(s => s.trim()).filter(Boolean);
-  const services = servicesInput.split(',').map(s => s.trim()).filter(Boolean);
+  const skill_set = skillsetInput.split(',').map(s => s.trim()).filter(Boolean);
+  const services_provided = servicesInput.split(',').map(s => s.trim()).filter(Boolean);
 
-  // 1. Sign up the user
+  // Step 1: Sign up
   const { data: signupData, error: signupError } = await supabaseClient.auth.signUp({
-  email,
-  password,
-});
-
-if (signupError) {
-  document.getElementById('error').innerText = signupError.message;
-  return;
-}
-
-// Step 2: Sign in to get session
-const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
-  email,
-  password,
-});
-
-if (loginError) {
-  document.getElementById('error').innerText = loginError.message;
-  return;
-}
-
-// Step 3: Insert profile
-const { user } = loginData;
-
-const { error: insertError } = await supabaseClient.from('profiles').insert([
-  {
-    id: user.id,
-    name,
-    username,
     email,
-    contact_no: contact,
-    location,
-    skillset, // _text[] in Supabase
-    services_provided: services // _text[] in Supabase
+    password,
+  });
+
+  if (signupError) {
+    document.getElementById('error').innerText = signupError.message;
+    return;
   }
-]);
+
+  const user = signupData.user;
+
+  console.log("User ID:", user?.id);
+console.log("Skill Set:", skill_set);
+console.log("Services Provided:", services_provided);
+
+
+  if (!user) {
+    document.getElementById('error').innerText = "Signup succeeded, but no user returned. Please try logging in.";
+    return;
+  }
+
+  // Step 2: Insert user profile
+  const { error: insertError } = await supabaseClient.from('profiles').insert([
+    {
+      id: user.id,
+      name,
+      username,
+      email,
+      contact_no: contact,
+      location,
+      skill_set,
+      services_provided
+    }
+  ]);
 
   if (insertError) {
     document.getElementById('error').innerText = insertError.message;
     return;
   }
 
-  alert('Signup successful! Please check your email to confirm.');
+  alert('Signup successful!');
   window.location.href = 'index.html';
 });
-
