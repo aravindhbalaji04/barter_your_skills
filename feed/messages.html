@@ -29,6 +29,14 @@
     .invite .desc { color: #22223b; }
     .invite button { background: #1976d2; color: #fff; border: none; border-radius: 7px; padding: 7px 18px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-right: 10px; }
     .invite button.decline { background: #d7263d; }
+    .chat-item { display: flex; align-items: center; padding: 12px 18px; border-bottom: 1px solid #e0c3fc; cursor: pointer; transition: background 0.18s; }
+    .chat-item:hover { background: #f1f1f1; }
+    .chat-item.active { background: #e0c3fc; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin-right: 12px; }
+    .chat-info { flex: 1; }
+    .chat-name { font-weight: 700; color: #22223b; }
+    .chat-last { font-size: 0.9rem; color: #777; }
+    .chat-time { font-size: 0.8rem; color: #b39ddb; }
   </style>
 </head>
 <body>
@@ -48,6 +56,10 @@
     <div id="invitesSection" style="display:none;padding:24px;">
       <h2 style="color:#5e548e;font-size:1.2rem;margin-bottom:18px;">Collaboration Invitations</h2>
       <div id="invitesList"></div>
+    </div>
+    <div id="chatList" style="padding: 24px 18px; display: none;">
+      <h2 style="color:#5e548e;font-size:1.2rem;margin-bottom:18px;">Your Chats</h2>
+      <div id="chatListContainer"></div>
     </div>
   </div>
   <script src="/socket.io/socket.io.js"></script>
@@ -70,6 +82,7 @@
     const chatMessages = document.getElementById('chatMessages');
     const chatForm = document.getElementById('chatForm');
     const msgInput = document.getElementById('msgInput');
+    const chatListContainer = document.getElementById('chatListContainer');
 
     // If no target user, show a list of conversations (for demo, just show info)
     if (!targetUser) {
@@ -122,6 +135,7 @@
     const invitesTab = document.getElementById('invitesTab');
     const chatsSection = document.getElementById('chatsSection');
     const invitesSection = document.getElementById('invitesSection');
+    const chatList = document.getElementById('chatList');
     chatsTab.onclick = function() {
       chatsTab.style.background = '#5e548e';
       chatsTab.style.color = '#fff';
@@ -129,6 +143,7 @@
       invitesTab.style.color = '#5e548e';
       chatsSection.style.display = '';
       invitesSection.style.display = 'none';
+      chatList.style.display = 'none';
     };
     invitesTab.onclick = function() {
       invitesTab.style.background = '#5e548e';
@@ -137,6 +152,7 @@
       chatsTab.style.color = '#5e548e';
       chatsSection.style.display = 'none';
       invitesSection.style.display = '';
+      chatList.style.display = 'none';
     };
 
     // Supabase client setup
@@ -220,11 +236,85 @@
       chatsTab.style.color = '#5e548e';
       chatsSection.style.display = 'none';
       invitesSection.style.display = '';
+      chatList.style.display = 'none';
       fetchInvitations();
     };
 
     // Optionally, fetch on page load if you want
     // fetchInvitations();
+
+    // Fetch recent chats for the user
+    async function loadChats() {
+      // Fetch all messages where currentUser is either sender or receiver
+      const res = await fetch(`/api/messages/all/${currentUser}`);
+      const allMessages = await res.json();
+      // Build a unique chat list for all users the current user has messaged with
+      const chatMap = {};
+      allMessages.forEach(msg => {
+        const otherUser = msg.from === currentUser ? msg.to : msg.from;
+        if (!chatMap[otherUser] || chatMap[otherUser].timestamp < msg.timestamp) {
+          chatMap[otherUser] = {
+            username: otherUser,
+            avatar: msg.avatar || '',
+            lastMessage: msg.text,
+            lastTime: new Date(msg.timestamp).toLocaleTimeString()
+          };
+        }
+      });
+      chats = Object.values(chatMap);
+      renderChats();
+    }
+
+    function renderChats() {
+      chatList.innerHTML = '';
+      chats.forEach(chat => {
+        const div = document.createElement('div');
+        div.className = 'chat-item' + (selectedChat && selectedChat.username === chat.username ? ' active' : '');
+        div.innerHTML = `
+          <div class="avatar" style="width:38px;height:38px;overflow:hidden;background:#b39ddb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.1rem;">
+            ${chat.avatar ? `<img src="${chat.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : chat.username[0].toUpperCase()}
+          </div>
+          <div class="chat-info">
+            <div class="chat-name" style="font-weight:600;color:#5e548e;">${chat.username}</div>
+            <div class="chat-last" style="font-size:0.95rem;color:#b39ddb;">${chat.lastMessage || ''}</div>
+          </div>
+          <div class="chat-time" style="font-size:0.85rem;color:#b39ddb;">${chat.lastTime || ''}</div>
+        `;
+        div.onclick = () => selectChat(chat);
+        chatList.appendChild(div);
+      });
+    }
+
+    let selectedChat = null;
+    async function selectChat(chat) {
+      selectedChat = chat;
+      renderChats();
+      mainHeader.innerHTML = `<div class="avatar" style="width:32px;height:32px;overflow:hidden;display:inline-block;vertical-align:middle;">${chat.avatar ? `<img src="${chat.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : chat.username[0].toUpperCase()}</div> <span style="vertical-align:middle;">${chat.username}</span>`;
+      mainForm.style.display = '';
+      await loadMessages();
+    }
+
+    let messages = [];
+    async function loadMessages() {
+      chatMessages.innerHTML = '<div style="color:#b39ddb;">Loading...</div>';
+      const res = await fetch(`/api/messages/${currentUser}/${selectedChat.username}`);
+      messages = await res.json();
+      renderMessages();
+    }
+
+    function renderMessages() {
+      chatMessages.innerHTML = '';
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'msg' + (msg.from === currentUser ? ' me' : '');
+        div.innerHTML = `<div class="bubble">${msg.text}</div><div class="meta">${msg.from} • ${new Date(msg.timestamp).toLocaleTimeString()}</div>`;
+        chatMessages.appendChild(div);
+      });
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Call loadChats on page load
+    loadChats();
   </script>
 </body>
 </html>
