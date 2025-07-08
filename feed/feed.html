@@ -285,64 +285,39 @@
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    // Dummy data for demonstration
-    const profiles = [
-      {
-        name: 'John Doe',
-        username: 'johndoe',
-        pic: 'https://randomuser.me/api/portraits/men/32.jpg',
-        skillset: ['Web Development', 'UI/UX Design', 'JavaScript'],
-        services: ['Website Building', 'Design Consultation'],
-        merit: 92,
-        rating: 4.8
-      },
-      {
-        name: 'Jane Smith',
-        username: 'janesmith',
-        pic: 'https://randomuser.me/api/portraits/women/44.jpg',
-        skillset: ['Graphic Design', 'Branding', 'Photoshop'],
-        services: ['Branding', 'Design Consultation'],
-        merit: 88,
-        rating: 4.6
-      },
-      {
-        name: 'Alex Brown',
-        username: 'alexbrown',
-        pic: 'https://randomuser.me/api/portraits/men/54.jpg',
-        skillset: ['Content Writing', 'SEO', 'Copywriting'],
-        services: ['Website Building'],
-        merit: 85,
-        rating: 4.2
-      },
-      {
-        name: 'Emily White',
-        username: 'emilywhite',
-        pic: 'https://randomuser.me/api/portraits/women/68.jpg',
-        skillset: ['Digital Marketing', 'Social Media', 'Analytics'],
-        services: ['Branding'],
-        merit: 90,
-        rating: 4.7
-      },
-      {
-        name: 'Sam Lee',
-        username: 'samlee',
-        pic: 'https://randomuser.me/api/portraits/men/77.jpg',
-        skillset: ['App Development', 'Flutter', 'Firebase'],
-        services: ['App Development'],
-        merit: 80,
-        rating: 4.1
-      },
-      {
-        name: 'Priya Kumar',
-        username: 'priyakumar',
-        pic: 'https://randomuser.me/api/portraits/women/12.jpg',
-        skillset: ['Finance', 'Excel', 'Consulting'],
-        services: ['Finance'],
-        merit: 87,
-        rating: 4.5
+
+    // Supabase client setup
+    const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    let profiles = [];
+
+    async function fetchProfiles() {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) {
+        grid.innerHTML = `<div style="color:red;">Failed to load profiles: ${error.message}</div>`;
+        return;
       }
-    ];
+
+      profiles = (data || []).map(profile => ({
+        name: profile.name || '',
+        username: profile.username || '',
+        pic: profile.pic || `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random()*10)+1}.jpg`,
+        skillset: Array.isArray(profile.skill_set) ? profile.skill_set : (profile.skill_set ? profile.skill_set.split(',').map(s=>s.trim()) : []),
+        services: Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []),
+        merit: profile.merit || Math.floor(Math.random()*21)+80,
+        rating: profile.rating || (Math.random()*1.5+3.5).toFixed(1)
+      }));
+
+      filterAndSortProfiles();
+    }
 
     const grid = document.getElementById('profilesGrid');
     const searchBar = document.getElementById('searchBar');
@@ -411,7 +386,7 @@
     }
 
     // Initial render
-    filterAndSortProfiles();
+    fetchProfiles();
 
     searchBar.addEventListener('input', filterAndSortProfiles);
     serviceSelect.addEventListener('change', filterAndSortProfiles);
