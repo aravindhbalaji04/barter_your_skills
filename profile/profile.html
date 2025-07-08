@@ -184,56 +184,164 @@
   </style>
 </head>
 <body>
-  <div class="profile-container">
-    <div class="profile-header">
-      <img class="profile-pic" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile Picture">
-      <div class="profile-info">
-        <div class="profile-name">John Doe</div>
-        <div class="profile-username">
-          @johndoe
-          <button onclick="window.location.href = '/feed/messages.html?user=johndoe'">DM</button>
-          <button onclick="alert('Connection request sent!')">Connect</button>
-        </div>
-        <div class="profile-skillset">
-          <b>Skillset:</b>
-          <span>Web Development</span>
-          <span>UI/UX Design</span>
-          <span>JavaScript</span>
-        </div>
-        <div class="profile-services">
-          <b>Services:</b>
-          <span>Website Building</span>
-          <span>Design Consultation</span>
-        </div>
-        <div class="profile-merit">
-          Merit Score: <span class="score">92</span>
-        </div>
-      </div>
-    </div>
-    <div class="profile-section">
-      <div class="section-title">Ratings & Reviews</div>
-      <div class="reviews">
-        <div class="review">
-          <span class="reviewer">@janesmith</span>
-          <span class="review-rating">★★★★★</span>
-          <div>Great collaborator! Delivered the project on time and exceeded expectations.</div>
-        </div>
-        <div class="review">
-          <span class="reviewer">@alexbrown</span>
-          <span class="review-rating">★★★★☆</span>
-          <div>Very skilled and easy to work with. Would recommend!</div>
-        </div>
-      </div>
-    </div>
-    <div class="profile-section">
-      <div class="section-title">Currently Collaborating With</div>
-      <div class="collaborators">
-        <div class="collaborator">@janesmith</div>
-        <div class="collaborator">@alexbrown</div>
-        <div class="collaborator">@emilywhite</div>
-      </div>
-    </div>
+  <div class="profile-container" id="profileContainer">
+    <!-- Profile content will be injected here -->
     <div class="footer">Barter Your Skills &copy; 2025</div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // Supabase client setup
+    const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Get username from URL
+    function getUsernameFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('user');
+    }
+
+    function renderProfile(profile) {
+      const container = document.getElementById('profileContainer');
+      if (!profile) {
+        container.innerHTML = '<div style="color:#b39ddb;text-align:center;font-size:1.2rem;">User not found.</div>';
+        return;
+      }
+      // Fallbacks for missing data
+      const name = profile.name || 'Unknown';
+      const username = profile.username || 'unknown';
+      const pic = profile.pic || `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random()*10)+1}.jpg`;
+      const skillset = Array.isArray(profile.skill_set) ? profile.skill_set : (profile.skill_set ? profile.skill_set.split(',').map(s=>s.trim()) : []);
+      const services = Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []);
+      const merit = typeof profile.merit === 'number' ? profile.merit : 100;
+      const rating = typeof profile.rating === 'number' ? profile.rating : 0;
+      const reviews = Array.isArray(profile.reviews) ? profile.reviews : [];
+      const collaborators = Array.isArray(profile.collaborators) ? profile.collaborators : [];
+      const currentUser = (localStorage.getItem('currentUser')||'').trim().toLowerCase();
+      const isOwnProfile = currentUser === username.trim().toLowerCase();
+      let editBtn = '';
+      if (isOwnProfile) {
+        editBtn = `<button id='editProfileBtn' style='margin-left:12px;background:#1976d2;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-weight:600;font-size:1rem;cursor:pointer;'>Edit Profile</button>`;
+      }
+      container.innerHTML = `
+        <div class="profile-header">
+          <img class="profile-pic" src="${pic}" alt="Profile Picture">
+          <div class="profile-info">
+            <div class="profile-name">${name}</div>
+            <div class="profile-username">
+              @${username}
+              <button onclick="window.location.href = '/feed/messages.html?user=${username}'">DM</button>
+              <button onclick="alert('Connection request sent!')">Connect</button>
+              <button onclick="window.location.href = '/projects/initiate_project.html?user=${username}'">Invite to Collaborate</button>
+              ${editBtn}
+            </div>
+            <div class="profile-skillset">
+              <b>Skillset:</b>
+              ${skillset.map(skill => `<span>${skill}</span>`).join(' ')}
+            </div>
+            <div class="profile-services">
+              <b>Services:</b>
+              ${services.map(service => `<span>${service}</span>`).join(' ')}
+            </div>
+            <div class="profile-merit">
+              Merit Score: <span class="score">${merit}</span> | Rating: <span class="score">${rating}</span>
+            </div>
+          </div>
+        </div>
+        <div class="profile-section">
+          <div class="section-title">Ratings & Reviews</div>
+          <div class="reviews">
+            ${reviews.length > 0 ? reviews.map(r => `
+              <div class="review">
+                <span class="reviewer">@${r.reviewer || 'anon'}</span>
+                <span class="review-rating">${r.rating || '★★★★★'}</span>
+                <div>${r.text || ''}</div>
+              </div>
+            `).join('') : `<div style='color:#b39ddb;'>No reviews yet.</div>`}
+          </div>
+        </div>
+        <div class="profile-section">
+          <div class="section-title">Currently Collaborating With</div>
+          <div class="collaborators">
+            ${collaborators.length > 0 ? collaborators.map(c => `<div class="collaborator">@${c}</div>`).join('') : `<div style='color:#b39ddb;'>No collaborators listed.</div>`}
+          </div>
+        </div>
+      `;
+      if (isOwnProfile) {
+        setTimeout(() => {
+          const btn = document.getElementById('editProfileBtn');
+          if (btn) btn.onclick = () => showEditForm(profile);
+        }, 0);
+      }
+    }
+
+    function showEditForm(profile) {
+      const container = document.getElementById('profileContainer');
+      const name = profile.name || '';
+      const pic = profile.pic || '';
+      const skillset = Array.isArray(profile.skill_set) ? profile.skill_set.join(', ') : (profile.skill_set || '');
+      const services = Array.isArray(profile.services_provided) ? profile.services_provided.join(', ') : (profile.services_provided || '');
+      container.innerHTML = `
+        <form id="editProfileForm" style="margin-top:24px;">
+          <h2 style="color:#5e548e;">Edit Profile</h2>
+          <label>Name</label>
+          <input type="text" id="editName" value="${name}" required style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <label>Profile Picture URL</label>
+          <input type="text" id="editPic" value="${pic}" style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <label>Skillset (comma separated)</label>
+          <input type="text" id="editSkillset" value="${skillset}" style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <label>Services (comma separated)</label>
+          <input type="text" id="editServices" value="${services}" style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <button type="submit" style="background:#1976d2;color:#fff;border:none;border-radius:7px;padding:10px 24px;font-weight:700;font-size:1.1rem;cursor:pointer;margin-top:10px;">Save</button>
+          <button type="button" id="cancelEditBtn" style="background:#b39ddb;color:#fff;border:none;border-radius:7px;padding:10px 24px;font-weight:700;font-size:1.1rem;cursor:pointer;margin-top:10px;margin-left:10px;">Cancel</button>
+        </form>
+      `;
+      document.getElementById('cancelEditBtn').onclick = () => renderProfile(profile);
+      document.getElementById('editProfileForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const updated = {
+          name: document.getElementById('editName').value.trim(),
+          skill_set: document.getElementById('editSkillset').value.split(',').map(s=>s.trim()).filter(Boolean),
+          services_provided: document.getElementById('editServices').value.split(',').map(s=>s.trim()).filter(Boolean)
+        };
+        const picVal = document.getElementById('editPic').value.trim();
+        if (picVal) {
+          updated.pic = picVal;
+        }
+        const { error } = await supabase
+          .from('profiles')
+          .update(updated)
+          .eq('username', profile.username);
+        if (error) {
+          alert('Failed to update profile: ' + error.message);
+        } else {
+          alert('Profile updated!');
+          // Reload profile
+          loadProfile();
+        }
+      };
+    }
+
+    async function loadProfile() {
+      const username = getUsernameFromUrl();
+      if (!username) {
+        renderProfile(null);
+        return;
+      }
+      // Fetch profile from Supabase
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('username', username)
+        .single();
+      if (error || !data) {
+        renderProfile(null);
+        return;
+      }
+      renderProfile(data);
+    }
+
+    loadProfile();
+  </script>
 </body>
 </html>

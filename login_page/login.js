@@ -19,6 +19,17 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   if (error) {
     document.getElementById('error').innerText = error.message;
   } else {
+    // Fetch the user's profile to get the username
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('username')
+      .eq('email', email)
+      .single();
+
+    if (profile && profile.username) {
+      localStorage.setItem('currentUser', profile.username.trim().toLowerCase());
+    }
+
     alert('Login successful!');
     window.location.href = '/feed/feed.html';
   }

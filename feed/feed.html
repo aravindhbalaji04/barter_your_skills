@@ -76,6 +76,46 @@
       background: #b01e33;
       transform: translateY(-1px);
     }
+    .project-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+      transition: background 0.18s, transform 0.18s;
+      z-index: 11;
+    }
+    .project-btn:hover {
+      background: #1565c0;
+      transform: translateY(-1px);
+    }
+    .myprofile-btn {
+      position: absolute;
+      top: 24px;
+      right: 140px;
+      background: #5e548e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #b39ddb22;
+      transition: background 0.18s, transform 0.18s;
+      z-index: 11;
+    }
+    .myprofile-btn:hover {
+      background: #7c6cc5;
+      transform: translateY(-1px);
+    }
     h2 {
       text-align: center;
       color: #5e548e;
@@ -236,6 +276,8 @@
 </head>
 <body>
   <button class="logout-btn" id="logoutBtn">Logout</button>
+  <button class="project-btn" id="projectBtn">Project</button>
+  <button class="myprofile-btn" id="myProfileBtn">My Profile</button>
   <div class="feed-container">
     <h1>
       <a href="feed/messages.html" id="messagesLink" class="messages-btn">
@@ -287,13 +329,20 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-
     // Supabase client setup
     const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     let profiles = [];
+    function ensureCurrentUser() {
+      let currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        document.getElementById('profilesGrid').innerHTML = '<div style="color:#b39ddb;text-align:center;font-size:1.2rem;">Please log in to view the feed.</div>';
+        return null;
+      }
+      return currentUser.trim().toLowerCase();
+    }
 
     async function fetchProfiles() {
       const { data, error } = await supabase
@@ -302,22 +351,32 @@
         .order('name', { ascending: true });
 
       if (error) {
-        grid.innerHTML = `<div style="color:red;">Failed to load profiles: ${error.message}</div>`;
+        grid.innerHTML = `<div style=\"color:red;\">Failed to load profiles: ${error.message}</div>`;
         return;
       }
 
-      profiles = (data || []).map(profile => ({
-        name: profile.name || '',
-        username: profile.username || '',
-        pic: profile.pic || `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random()*10)+1}.jpg`,
-        skillset: Array.isArray(profile.skill_set) ? profile.skill_set : (profile.skill_set ? profile.skill_set.split(',').map(s=>s.trim()) : []),
-        services: Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []),
-        merit: profile.merit || Math.floor(Math.random()*21)+80,
-        rating: profile.rating || (Math.random()*1.5+3.5).toFixed(1)
-      }));
+      // Always ensure currentUser is set and normalized
+      let currentUser = ensureCurrentUser();
+      if (!currentUser) return;
+      profiles = (data || [])
+        .filter(profile => {
+          if (!profile.username) return true;
+          // Always compare normalized
+          return profile.username.trim().toLowerCase() !== currentUser;
+        })
+        .map(profile => ({
+          name: profile.name || '',
+          username: profile.username || '',
+          pic: profile.pic || `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random()*10)+1}.jpg`,
+          skillset: Array.isArray(profile.skill_set) ? profile.skill_set : (profile.skill_set ? profile.skill_set.split(',').map(s=>s.trim()) : []),
+          services: Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []),
+          merit: typeof profile.merit === 'number' ? profile.merit : 100,
+          rating: typeof profile.rating === 'number' ? profile.rating : 0
+        }));
 
       filterAndSortProfiles();
     }
+    
 
     const grid = document.getElementById('profilesGrid');
     const searchBar = document.getElementById('searchBar');
@@ -333,7 +392,7 @@
         card.onclick = (e) => {
           // Only trigger if not clicking DM button
           if (e.target.classList.contains('dm-btn')) return;
-          window.location.href = `profile.html?user=${profile.username}`;
+          window.location.href = `/profile/profile.html?user=${profile.username}`;
         };
         card.innerHTML = `
           <img class="profile-pic" src="${profile.pic}" alt="${profile.name}">
@@ -353,9 +412,8 @@
     function startDM(username) {
       let currentUser = localStorage.getItem('currentUser');
       if (!currentUser) {
-        currentUser = prompt('Enter your username:');
-        if (!currentUser) return;
-        localStorage.setItem('currentUser', currentUser);
+        document.getElementById('profilesGrid').innerHTML = '<div style="color:#b39ddb;text-align:center;font-size:1.2rem;">Please log in to start a DM.</div>';
+        return;
       }
       // Go to messages.html with the other user
       window.location.href = `messages.html?user=${username}`;
@@ -398,9 +456,8 @@
       e.preventDefault();
       let currentUser = localStorage.getItem('currentUser');
       if (!currentUser) {
-        currentUser = prompt('Enter your username:');
-        if (!currentUser) return;
-        localStorage.setItem('currentUser', currentUser);
+        alert('Please log in to view your messages.');
+        return;
       }
       window.location.href = `messages.html`;
     });
@@ -421,6 +478,19 @@
       localStorage.removeItem('currentUser');
       // Redirect to login page
       window.location.href = '/index.html';
+    });
+
+    document.getElementById('projectBtn').addEventListener('click', function() {
+      window.location.href = '../projects/projects.html';
+    });
+
+    document.getElementById('myProfileBtn').addEventListener('click', function() {
+      let currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        alert('Please log in to view your profile.');
+        return;
+      }
+      window.location.href = `/profile/profile.html?user=${encodeURIComponent(currentUser)}`;
     });
   </script>
 </body>
