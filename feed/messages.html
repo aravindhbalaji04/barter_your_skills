@@ -22,74 +22,100 @@
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header" id="chatHeader">Chat</div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <form class="chat-input" id="chatForm">
-      <input type="text" id="msgInput" placeholder="Type your message..." autocomplete="off" required />
-      <button type="submit">Send</button>
-    </form>
+  <div style="display: flex; height: 100vh;">
+    <!-- Sidebar -->
+    <div style="width: 280px; background: #fff; border-right: 1.5px solid #e0c3fc; display: flex; flex-direction: column;">
+      <div style="padding: 24px 18px 12px 18px; border-bottom: 1px solid #e0c3fc; font-weight: bold; color: #5e548e; font-size: 1.1rem;">Recent Chats</div>
+      <div id="chatList" style="flex: 1; overflow-y: auto;"></div>
+    </div>
+    <!-- Main Chat -->
+    <div style="flex: 1; display: flex; flex-direction: column;">
+      <div class="chat-header" id="mainHeader">Select a chat</div>
+      <div class="chat-messages" id="mainMessages" style="flex: 1; overflow-y: auto;"></div>
+      <form class="chat-input" id="mainForm" style="display:none;">
+        <input type="text" id="msgInput" placeholder="Type a message..." autocomplete="off" required />
+        <button type="submit">Send</button>
+      </form>
+    </div>
   </div>
-  <script src="/socket.io/socket.io.js"></script>
   <script>
-    // Get current user and target user from query params/localStorage (for demo, use prompt if not set)
-    let currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) {
-      currentUser = prompt('Enter your username:');
-      localStorage.setItem('currentUser', currentUser);
-    }
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetUser = urlParams.get('user');
-    const chatHeader = document.getElementById('chatHeader');
-    const chatMessages = document.getElementById('chatMessages');
-    const chatForm = document.getElementById('chatForm');
-    const msgInput = document.getElementById('msgInput');
+let currentUser = localStorage.getItem('currentUser');
+if (!currentUser) {
+  currentUser = prompt('Enter your username:');
+  localStorage.setItem('currentUser', currentUser);
+}
+let chats = [];
+let selectedChat = null;
+let messages = [];
 
-    // If no target user, show a list of conversations (for demo, just show info)
-    if (!targetUser) {
-      chatHeader.textContent = 'Your Conversations';
-      chatMessages.innerHTML = '<div style="color:#b39ddb;">Select a user to start chatting from the feed or profile page.</div>';
-      chatForm.style.display = 'none';
-    } else {
-      chatHeader.textContent = `Chat with ${targetUser}`;
-      chatForm.style.display = '';
-    }
+const chatList = document.getElementById('chatList');
+const mainHeader = document.getElementById('mainHeader');
+const mainMessages = document.getElementById('mainMessages');
+const mainForm = document.getElementById('mainForm');
+const msgInput = document.getElementById('msgInput');
 
-    const socket = io();
-    let room = null;
-    if (targetUser) {
-      // Join a room unique to the two users (sorted for consistency)
-      room = [currentUser, targetUser].sort().join('_');
-      socket.emit('joinRoom', room);
-    }
+// Fetch recent chats for the user
+async function loadChats() {
+  const res = await fetch(`/api/chats/${currentUser}`);
+  chats = await res.json();
+  renderChats();
+}
+function renderChats() {
+  chatList.innerHTML = '';
+  chats.forEach(chat => {
+    const div = document.createElement('div');
+    div.className = 'chat-item' + (selectedChat && selectedChat.username === chat.username ? ' active' : '');
+    div.innerHTML = `
+      <div class="avatar">${chat.avatar ? `<img src="${chat.avatar}" style="width:100%;height:100%;border-radius:50%;">` : chat.username[0].toUpperCase()}</div>
+      <div class="chat-info">
+        <div class="chat-name">${chat.username}</div>
+        <div class="chat-last">${chat.lastMessage || ''}</div>
+      </div>
+      <div class="chat-time">${chat.lastTime || ''}</div>
+    `;
+    div.onclick = () => selectChat(chat);
+    chatList.appendChild(div);
+  });
+}
+async function selectChat(chat) {
+  selectedChat = chat;
+  renderChats();
+  mainHeader.innerHTML = `<div class="avatar" style="width:32px;height:32px;">${chat.avatar ? `<img src="${chat.avatar}" style="width:100%;height:100%;border-radius:50%;">` : chat.username[0].toUpperCase()}</div> ${chat.username}`;
+  mainForm.style.display = '';
+  await loadMessages();
+}
+async function loadMessages() {
+  mainMessages.innerHTML = '<div style="color:#b39ddb;">Loading...</div>';
+  const res = await fetch(`/api/messages/${currentUser}/${selectedChat.username}`);
+  messages = await res.json();
+  renderMessages();
+}
+function renderMessages() {
+  mainMessages.innerHTML = '';
+  messages.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'msg' + (msg.from === currentUser ? ' me' : '');
+    div.innerHTML = `<div class="bubble">${msg.text}</div><div class="meta">${msg.from} • ${new Date(msg.time).toLocaleTimeString()}</div>`;
+    mainMessages.appendChild(div);
+  });
+  mainMessages.scrollTop = mainMessages.scrollHeight;
+}
+mainForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const text = msgInput.value.trim();
+  if (!text || !selectedChat) return;
+  const msg = { text, from: currentUser, to: selectedChat.username, time: Date.now() };
+  // Save to DB
+  await fetch('/api/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(msg)
+  });
+  msgInput.value = '';
+  await loadMessages();
+};
 
-    function appendMsg(msg, fromMe) {
-      const div = document.createElement('div');
-      div.className = 'msg' + (fromMe ? ' me' : '');
-      div.innerHTML = `<div class="bubble">${msg.text}</div><div class="meta">${msg.from} • ${new Date(msg.time).toLocaleTimeString()}</div>`;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // Receive messages
-    socket.on('chatMessage', (msg) => {
-      // Only show messages for this conversation
-      if (!targetUser || (msg.room && msg.room === room)) {
-        appendMsg(msg, msg.from === currentUser);
-      }
-    });
-
-    // Send message
-    if (targetUser) {
-      chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const text = msgInput.value.trim();
-        if (!text) return;
-        const msg = { text, from: currentUser, to: targetUser, time: Date.now(), room };
-        socket.emit('chatMessage', msg);
-        msgInput.value = '';
-      });
-    }
+loadChats();
   </script>
 </body>
 </html>
