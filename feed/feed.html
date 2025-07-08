@@ -287,13 +287,20 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-
     // Supabase client setup
     const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     let profiles = [];
+    function ensureCurrentUser() {
+      let currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        document.getElementById('profilesGrid').innerHTML = '<div style="color:#b39ddb;text-align:center;font-size:1.2rem;">Please log in to view the feed.</div>';
+        return null;
+      }
+      return currentUser.trim().toLowerCase();
+    }
 
     async function fetchProfiles() {
       const { data, error } = await supabase
@@ -302,22 +309,32 @@
         .order('name', { ascending: true });
 
       if (error) {
-        grid.innerHTML = `<div style="color:red;">Failed to load profiles: ${error.message}</div>`;
+        grid.innerHTML = `<div style=\"color:red;\">Failed to load profiles: ${error.message}</div>`;
         return;
       }
 
-      profiles = (data || []).map(profile => ({
-        name: profile.name || '',
-        username: profile.username || '',
-        pic: profile.pic || `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random()*10)+1}.jpg`,
-        skillset: Array.isArray(profile.skill_set) ? profile.skill_set : (profile.skill_set ? profile.skill_set.split(',').map(s=>s.trim()) : []),
-        services: Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []),
-        merit: profile.merit || Math.floor(Math.random()*21)+80,
-        rating: profile.rating || (Math.random()*1.5+3.5).toFixed(1)
-      }));
+      // Always ensure currentUser is set and normalized
+      let currentUser = ensureCurrentUser();
+      if (!currentUser) return;
+      profiles = (data || [])
+        .filter(profile => {
+          if (!profile.username) return true;
+          // Always compare normalized
+          return profile.username.trim().toLowerCase() !== currentUser;
+        })
+        .map(profile => ({
+          name: profile.name || '',
+          username: profile.username || '',
+          pic: profile.pic || `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random()*10)+1}.jpg`,
+          skillset: Array.isArray(profile.skill_set) ? profile.skill_set : (profile.skill_set ? profile.skill_set.split(',').map(s=>s.trim()) : []),
+          services: Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []),
+          merit: profile.merit || Math.floor(Math.random()*21)+80,
+          rating: profile.rating || (Math.random()*1.5+3.5).toFixed(1)
+        }));
 
       filterAndSortProfiles();
     }
+    
 
     const grid = document.getElementById('profilesGrid');
     const searchBar = document.getElementById('searchBar');
