@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects | Barter Your Skills</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(120deg, #f8fafc 0%, #e0c3fc 100%);
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px #b39ddb22;
+      padding: 32px 40px;
+    }
+    h1 {
+      text-align: center;
+      color: #5e548e;
+      font-size: 2.2rem;
+      margin-bottom: 32px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .tabs {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      justify-content: center;
+    }
+    .tab {
+      padding: 10px 28px;
+      border-radius: 8px 8px 0 0;
+      background: #e0c3fc;
+      color: #5e548e;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: background 0.18s, color 0.18s;
+    }
+    .tab.active {
+      background: #5e548e;
+      color: #fff;
+    }
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .project-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .project-item {
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      padding: 18px 24px;
+      box-shadow: 0 2px 8px #b39ddb11;
+      border: 1.5px solid #e0c3fc;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .project-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #5e548e;
+    }
+    .project-status {
+      font-size: 0.98rem;
+      color: #b39ddb;
+      font-weight: 500;
+    }
+    .project-desc {
+      color: #22223b;
+      font-size: 1rem;
+    }
+    .empty-msg {
+      color: #b39ddb;
+      text-align: center;
+      margin-top: 32px;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Your Projects</h1>
+    <div class="tabs">
+      <button class="tab active" data-tab="current">Current</button>
+      <button class="tab" data-tab="archived">Archived</button>
+      <button class="tab" data-tab="cancelled">Cancelled</button>
+    </div>
+    <div class="tab-content active" id="current">
+      <ul class="project-list" id="currentList">
+        <!-- Current projects will be injected here -->
+      </ul>
+      <div class="empty-msg" id="currentEmpty" style="display:none;">No current projects.</div>
+    </div>
+    <div class="tab-content" id="archived">
+      <ul class="project-list" id="archivedList">
+        <!-- Archived projects will be injected here -->
+      </ul>
+      <div class="empty-msg" id="archivedEmpty" style="display:none;">No archived projects.</div>
+    </div>
+    <div class="tab-content" id="cancelled">
+      <ul class="project-list" id="cancelledList">
+        <!-- Cancelled projects will be injected here -->
+      </ul>
+      <div class="empty-msg" id="cancelledEmpty" style="display:none;">No cancelled projects.</div>
+    </div>
+  </div>
+  <script>
+    // Dummy data for demonstration
+    const projects = [
+      { title: 'Website for Local Bakery', desc: 'Building a responsive website for a local bakery.', status: 'current' },
+      { title: 'Branding for Startup', desc: 'Created branding assets for a fintech startup.', status: 'archived' },
+      { title: 'App Development', desc: 'Developed a mobile app for a fitness coach.', status: 'archived' },
+      { title: 'SEO Optimization', desc: 'SEO project for a blog, cancelled by client.', status: 'cancelled' },
+      { title: 'UI/UX Redesign', desc: 'Redesigning the UI/UX for an e-commerce site.', status: 'current' },
+      { title: 'Logo Design', desc: 'Logo design for a non-profit.', status: 'archived' },
+      { title: 'Social Media Campaign', desc: 'Cancelled campaign for a travel agency.', status: 'cancelled' }
+    ];
+
+    function renderProjects() {
+      const current = projects.filter(p => p.status === 'current');
+      const archived = projects.filter(p => p.status === 'archived');
+      const cancelled = projects.filter(p => p.status === 'cancelled');
+
+      renderList('currentList', current, 'currentEmpty');
+      renderList('archivedList', archived, 'archivedEmpty');
+      renderList('cancelledList', cancelled, 'cancelledEmpty');
+    }
+
+    function renderList(listId, items, emptyId) {
+      const list = document.getElementById(listId);
+      const emptyMsg = document.getElementById(emptyId);
+      list.innerHTML = '';
+      if (items.length === 0) {
+        emptyMsg.style.display = '';
+      } else {
+        emptyMsg.style.display = 'none';
+        items.forEach((p, i) => {
+          const li = document.createElement('li');
+          li.className = 'project-item';
+          li.innerHTML = `<a href="project_detail.html?id=${i+1}" style="text-decoration:none;color:inherit;"><div class="project-title">${p.title}</div><div class="project-desc">${p.desc}</div></a>`;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+      });
+    });
+
+    renderProjects();
+  </script>
+</body>
+</html>

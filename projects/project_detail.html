@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Details | Barter Your Skills</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { background: linear-gradient(120deg, #f8fafc 0%, #e0c3fc 100%); font-family: 'Roboto', Arial, sans-serif; margin: 0; min-height: 100vh; }
+    .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 18px #b39ddb22; padding: 32px 40px; }
+    h1 { color: #5e548e; font-size: 2rem; margin-bottom: 12px; }
+    .desc { color: #22223b; font-size: 1.1rem; margin-bottom: 18px; }
+    .collab-section { margin-bottom: 24px; }
+    .collab-label { color: #5e548e; font-weight: 600; }
+    .collab-user { color: #1976d2; font-weight: 700; margin-left: 8px; }
+    .dm-btn { background: #5e548e; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-left: 16px; transition: background 0.18s; }
+    .dm-btn:hover { background: #7c6cc5; }
+    .progress-section { margin-top: 32px; }
+    .goals-list { list-style: none; padding: 0; }
+    .goal-item { background: #f8fafc; border-radius: 8px; margin-bottom: 16px; padding: 16px 18px; box-shadow: 0 2px 8px #b39ddb11; border: 1.5px solid #e0c3fc; display: flex; flex-direction: column; gap: 8px; }
+    .goal-header { display: flex; align-items: center; gap: 12px; }
+    .goal-title { font-size: 1.08rem; font-weight: 600; color: #5e548e; flex: 1; }
+    .goal-checkbox { width: 20px; height: 20px; }
+    .goal-proof { margin-top: 8px; }
+    .goal-proof label { font-size: 0.95rem; color: #5e548e; }
+    .goal-proof input[type="file"] { margin-left: 8px; }
+    .goal-proof-preview { margin-top: 6px; }
+    .add-goal-form { display: flex; gap: 10px; margin-bottom: 18px; }
+    .add-goal-form input[type="text"] { flex: 1; padding: 8px 12px; border-radius: 7px; border: 1.5px solid #b39ddb; font-size: 1rem; }
+    .add-goal-form button { background: #1976d2; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.18s; }
+    .add-goal-form button:hover { background: #1565c0; }
+    .remove-goal-btn { background: #d7263d; color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-left: 10px; transition: background 0.18s; }
+    .remove-goal-btn:hover { background: #b01e33; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="projectTitle">Project Title</h1>
+    <div class="desc" id="projectDesc">Project description goes here.</div>
+    <div class="collab-section">
+      <span class="collab-label">Working with:</span>
+      <span class="collab-user" id="collabUser">Jane Smith</span>
+      <button class="dm-btn" id="dmBtn">Direct Message</button>
+    </div>
+    <div class="progress-section">
+      <h2 style="color:#5e548e;">Project Progress</h2>
+      <form class="add-goal-form" id="addGoalForm">
+        <input type="text" id="goalInput" placeholder="Add a new goal..." required />
+        <button type="submit">Add Goal</button>
+      </form>
+      <ul class="goals-list" id="goalsList"></ul>
+    </div>
+  </div>
+  <script>
+    // Dummy: get project from query param
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('id') || '1';
+    // Dummy data for demonstration
+    const projectData = {
+      1: { title: 'Website for Local Bakery', desc: 'Building a responsive website for a local bakery.', collab: 'Jane Smith', collabUser: 'janesmith' },
+      2: { title: 'UI/UX Redesign', desc: 'Redesigning the UI/UX for an e-commerce site.', collab: 'Alex Brown', collabUser: 'alexbrown' },
+      3: { title: 'SEO Optimization', desc: 'SEO project for a blog, cancelled by client.', collab: 'Sam Lee', collabUser: 'samlee' }
+    };
+    const project = projectData[projectId] || projectData[1];
+    document.getElementById('projectTitle').textContent = project.title;
+    document.getElementById('projectDesc').textContent = project.desc;
+    document.getElementById('collabUser').textContent = project.collab;
+    document.getElementById('dmBtn').onclick = function() {
+      window.location.href = `/feed/messages.html?user=${project.collabUser}`;
+    };
+
+    // Goals state
+    let goals = [];
+    function renderGoals() {
+      const list = document.getElementById('goalsList');
+      list.innerHTML = '';
+      goals.forEach((goal, idx) => {
+        const li = document.createElement('li');
+        li.className = 'goal-item';
+        li.innerHTML = `
+          <div class="goal-header">
+            <input type="checkbox" class="goal-checkbox" ${goal.done ? 'checked' : ''} data-idx="${idx}" />
+            <span class="goal-title">${goal.text}</span>
+            <button class="remove-goal-btn" data-idx="${idx}">Remove</button>
+          </div>
+          <div class="goal-proof">
+            <label>Attach proof:</label>
+            <input type="file" class="goal-file" data-idx="${idx}" accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" />
+            <div class="goal-proof-preview" id="proofPreview${idx}"></div>
+          </div>
+        `;
+        list.appendChild(li);
+        // Checkbox event
+        li.querySelector('.goal-checkbox').addEventListener('change', function() {
+          goals[idx].done = this.checked;
+        });
+        // Remove goal event
+        li.querySelector('.remove-goal-btn').addEventListener('click', function() {
+          goals.splice(idx, 1);
+          renderGoals();
+        });
+        // File upload event
+        li.querySelector('.goal-file').addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          const preview = document.getElementById('proofPreview'+idx);
+          if (file) {
+            if (file.type.startsWith('image/')) {
+              const img = document.createElement('img');
+              img.src = URL.createObjectURL(file);
+              img.style.maxWidth = '120px';
+              img.style.maxHeight = '80px';
+              preview.innerHTML = '';
+              preview.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+              const video = document.createElement('video');
+              video.src = URL.createObjectURL(file);
+              video.controls = true;
+              video.style.maxWidth = '160px';
+              video.style.maxHeight = '100px';
+              preview.innerHTML = '';
+              preview.appendChild(video);
+            } else {
+              preview.innerHTML = `<span>File attached: ${file.name}</span>`;
+            }
+          } else {
+            preview.innerHTML = '';
+          }
+        });
+      });
+    }
+    document.getElementById('addGoalForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const text = document.getElementById('goalInput').value.trim();
+      if (!text) return;
+      goals.push({ text, done: false });
+      document.getElementById('goalInput').value = '';
+      renderGoals();
+    });
+    renderGoals();
+  </script>
+</body>
+</html>
