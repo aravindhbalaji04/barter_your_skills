@@ -20,6 +20,7 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.static('../login_page')); 
 app.use('/feed', express.static('../feed'));
+app.use('/profile',express.static('../profile'));
 app.use(bodyParser.json());
 
 app.get("/", (req,res) =>{
