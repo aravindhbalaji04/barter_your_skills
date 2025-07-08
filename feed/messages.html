@@ -19,50 +19,24 @@
     .msg .bubble { background: #e0c3fc; color: #22223b; padding: 10px 16px; border-radius: 16px; max-width: 70%; display: inline-block; }
     .msg.me .bubble { background: #b39ddb; color: #fff; }
     .msg .meta { font-size: 0.85rem; color: #b39ddb; margin-top: 2px; }
-    .tab-btn { flex: 1; padding: 14px 0; font-size: 1.1rem; font-weight: 700; cursor: pointer; border-radius: 12px 12px 0 0; }
-    #chatsTab { background: #5e548e; color: #fff; border: none; }
-    #invitesTab { background: #e0c3fc; color: #5e548e; border: none; }
-    #invitesSection { display: none; padding: 24px; }
-    .invite { background: #f8fafc; border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; border: 1.5px solid #e0c3fc; }
-    .invite .from { font-weight: 700; color: #5e548e; }
-    .invite .project { margin: 6px 0 8px 0; }
-    .invite .desc { color: #22223b; }
-    .invite button { background: #1976d2; color: #fff; border: none; border-radius: 7px; padding: 7px 18px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-right: 10px; }
-    .invite button.decline { background: #d7263d; }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <div style="display:flex;">
-      <button id="chatsTab" class="tab-btn">Chats</button>
-      <button id="invitesTab" class="tab-btn">Your Invitations</button>
-    </div>
-    <div id="chatsSection">
-      <div class="chat-header" id="chatHeader">Chat</div>
-      <div class="chat-messages" id="chatMessages"></div>
-      <form class="chat-input" id="chatForm">
-        <input type="text" id="msgInput" placeholder="Type your message..." autocomplete="off" required />
-        <button type="submit">Send</button>
-      </form>
-    </div>
-    <div id="invitesSection" style="display:none;padding:24px;">
-      <h2 style="color:#5e548e;font-size:1.2rem;margin-bottom:18px;">Collaboration Invitations</h2>
-      <div id="invitesList"></div>
-    </div>
+    <div class="chat-header" id="chatHeader">Chat</div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <form class="chat-input" id="chatForm">
+      <input type="text" id="msgInput" placeholder="Type your message..." autocomplete="off" required />
+      <button type="submit">Send</button>
+    </form>
   </div>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
     // Get current user and target user from query params/localStorage (for demo, use prompt if not set)
     let currentUser = localStorage.getItem('currentUser');
     if (!currentUser) {
       currentUser = prompt('Enter your username:');
-      if (currentUser) {
-        currentUser = currentUser.trim().toLowerCase();
-        localStorage.setItem('currentUser', currentUser);
-      }
-    } else {
-      currentUser = currentUser.trim().toLowerCase();
+      localStorage.setItem('currentUser', currentUser);
     }
     const urlParams = new URLSearchParams(window.location.search);
     const targetUser = urlParams.get('user');
@@ -116,115 +90,6 @@
         msgInput.value = '';
       });
     }
-
-    // Tab switching logic
-    const chatsTab = document.getElementById('chatsTab');
-    const invitesTab = document.getElementById('invitesTab');
-    const chatsSection = document.getElementById('chatsSection');
-    const invitesSection = document.getElementById('invitesSection');
-    chatsTab.onclick = function() {
-      chatsTab.style.background = '#5e548e';
-      chatsTab.style.color = '#fff';
-      invitesTab.style.background = '#e0c3fc';
-      invitesTab.style.color = '#5e548e';
-      chatsSection.style.display = '';
-      invitesSection.style.display = 'none';
-    };
-    invitesTab.onclick = function() {
-      invitesTab.style.background = '#5e548e';
-      invitesTab.style.color = '#fff';
-      chatsTab.style.background = '#e0c3fc';
-      chatsTab.style.color = '#5e548e';
-      chatsSection.style.display = 'none';
-      invitesSection.style.display = '';
-    };
-
-    // Supabase client setup
-    const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    let invitations = [];
-    async function fetchInvitations() {
-      if (!currentUser) return;
-      const { data, error } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('to_user', currentUser)
-        .order('created_at', { ascending: false });
-      if (error) {
-        invitations = [];
-        document.getElementById('invitesList').innerHTML = '<div style="color:red;">Failed to load invitations.</div>';
-        return;
-      }
-      invitations = (data || []).filter(inv => {
-        // Defensive: ensure to_user is normalized
-        return (inv.to_user && inv.to_user.trim().toLowerCase() === currentUser);
-      });
-      renderInvitations();
-    }
-
-    function renderInvitations() {
-      const invitesList = document.getElementById('invitesList');
-      if (!invitations.length) {
-        invitesList.innerHTML = '<div style="color:#b39ddb;">No invitations at the moment.</div>';
-        return;
-      }
-      invitesList.innerHTML = invitations.map((inv, idx) => `
-        <div class="invite">
-          <div class="from">From: @${inv.from_user}</div>
-          <div class="project"><b>Project:</b> ${inv.project_title}</div>
-          <div class="desc">${inv.project_description}</div>
-          <div style="margin-top:12px;">
-            <button onclick="acceptInvite('${inv.id}', ${idx})">Accept</button>
-            <button onclick="declineInvite('${inv.id}', ${idx})" class="decline">Decline</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    window.acceptInvite = async function(id, idx) {
-      // Update status in DB (optional)
-      const { error } = await supabase
-        .from('invitations')
-        .update({ status: 'accepted' })
-        .eq('id', id);
-      if (!error) {
-        invitations.splice(idx, 1);
-        renderInvitations();
-        alert('You accepted the invitation!');
-      } else {
-        alert('Failed to accept invitation.');
-      }
-    };
-    window.declineInvite = async function(id, idx) {
-      // Update status in DB (optional)
-      const { error } = await supabase
-        .from('invitations')
-        .update({ status: 'declined' })
-        .eq('id', id);
-      if (!error) {
-        invitations.splice(idx, 1);
-        renderInvitations();
-        alert('You declined the invitation.');
-      } else {
-        alert('Failed to decline invitation.');
-      }
-    };
-
-    // Fetch invitations when the tab is opened
-    invitesTab.onclick = function() {
-      invitesTab.style.background = '#5e548e';
-      invitesTab.style.color = '#fff';
-      chatsTab.style.background = '#e0c3fc';
-      chatsTab.style.color = '#5e548e';
-      chatsSection.style.display = 'none';
-      invitesSection.style.display = '';
-      fetchInvitations();
-    };
-
-    // Optionally, fetch on page load if you want
-    // fetchInvitations();
   </script>
 </body>
 </html>

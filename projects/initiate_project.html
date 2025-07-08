@@ -29,43 +29,16 @@
     </form>
     <div id="resultMsg" style="margin-top:18px;color:#5e548e;"></div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    // Supabase client setup
-    const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
     // Get collaborator from query param
     const params = new URLSearchParams(window.location.search);
     const user = params.get('user') || '';
     document.getElementById('collabUser').value = user;
-
-    document.getElementById('initiateForm').onsubmit = async function(e) {
+    document.getElementById('initiateForm').onsubmit = function(e) {
       e.preventDefault();
-      const fromUser = localStorage.getItem('currentUser');
-      const toUser = user;
-      const projectTitle = document.getElementById('projectTitle').value.trim();
-      const projectDesc = document.getElementById('projectDesc').value.trim();
-      const resultMsg = document.getElementById('resultMsg');
-      if (!fromUser) {
-        resultMsg.textContent = 'Please log in to send an invite.';
-        return;
-      }
-      if (!toUser || !projectTitle || !projectDesc) {
-        resultMsg.textContent = 'Please fill in all fields.';
-        return;
-      }
-      resultMsg.textContent = 'Sending...';
-      const { data, error } = await supabase
-        .from('invitations')
-        .insert([{ from_user: fromUser, to_user: toUser, project_title: projectTitle, project_description: projectDesc }]);
-      if (error) {
-        resultMsg.textContent = 'Failed to send invite: ' + error.message;
-      } else {
-        resultMsg.textContent = 'Project invite sent to ' + toUser + '!';
-        this.reset();
-      }
+      // For now, just show a message
+      document.getElementById('resultMsg').textContent = 'Project invite sent to ' + user + '!';
+      this.reset();
     };
   </script>
 </body>

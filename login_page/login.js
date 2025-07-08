@@ -27,7 +27,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       .single();
 
     if (profile && profile.username) {
-      localStorage.setItem('currentUser', profile.username.trim().toLowerCase());
+      localStorage.setItem('currentUser', profile.username.trim());
     }
 
     alert('Login successful!');
