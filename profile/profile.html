@@ -215,10 +215,14 @@
       const services = Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []);
       const merit = typeof profile.merit === 'number' ? profile.merit : 100;
       const rating = typeof profile.rating === 'number' ? profile.rating : 0;
-      // Reviews and collaborators (optional, fallback to dummy if not present)
       const reviews = Array.isArray(profile.reviews) ? profile.reviews : [];
       const collaborators = Array.isArray(profile.collaborators) ? profile.collaborators : [];
-
+      const currentUser = (localStorage.getItem('currentUser')||'').trim().toLowerCase();
+      const isOwnProfile = currentUser === username.trim().toLowerCase();
+      let editBtn = '';
+      if (isOwnProfile) {
+        editBtn = `<button id='editProfileBtn' style='margin-left:12px;background:#1976d2;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-weight:600;font-size:1rem;cursor:pointer;'>Edit Profile</button>`;
+      }
       container.innerHTML = `
         <div class="profile-header">
           <img class="profile-pic" src="${pic}" alt="Profile Picture">
@@ -229,6 +233,7 @@
               <button onclick="window.location.href = '/feed/messages.html?user=${username}'">DM</button>
               <button onclick="alert('Connection request sent!')">Connect</button>
               <button onclick="window.location.href = '/projects/initiate_project.html?user=${username}'">Invite to Collaborate</button>
+              ${editBtn}
             </div>
             <div class="profile-skillset">
               <b>Skillset:</b>
@@ -262,6 +267,59 @@
           </div>
         </div>
       `;
+      if (isOwnProfile) {
+        setTimeout(() => {
+          const btn = document.getElementById('editProfileBtn');
+          if (btn) btn.onclick = () => showEditForm(profile);
+        }, 0);
+      }
+    }
+
+    function showEditForm(profile) {
+      const container = document.getElementById('profileContainer');
+      const name = profile.name || '';
+      const pic = profile.pic || '';
+      const skillset = Array.isArray(profile.skill_set) ? profile.skill_set.join(', ') : (profile.skill_set || '');
+      const services = Array.isArray(profile.services_provided) ? profile.services_provided.join(', ') : (profile.services_provided || '');
+      container.innerHTML = `
+        <form id="editProfileForm" style="margin-top:24px;">
+          <h2 style="color:#5e548e;">Edit Profile</h2>
+          <label>Name</label>
+          <input type="text" id="editName" value="${name}" required style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <label>Profile Picture URL</label>
+          <input type="text" id="editPic" value="${pic}" style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <label>Skillset (comma separated)</label>
+          <input type="text" id="editSkillset" value="${skillset}" style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <label>Services (comma separated)</label>
+          <input type="text" id="editServices" value="${services}" style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:7px;border:1.5px solid #b39ddb;" />
+          <button type="submit" style="background:#1976d2;color:#fff;border:none;border-radius:7px;padding:10px 24px;font-weight:700;font-size:1.1rem;cursor:pointer;margin-top:10px;">Save</button>
+          <button type="button" id="cancelEditBtn" style="background:#b39ddb;color:#fff;border:none;border-radius:7px;padding:10px 24px;font-weight:700;font-size:1.1rem;cursor:pointer;margin-top:10px;margin-left:10px;">Cancel</button>
+        </form>
+      `;
+      document.getElementById('cancelEditBtn').onclick = () => renderProfile(profile);
+      document.getElementById('editProfileForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const updated = {
+          name: document.getElementById('editName').value.trim(),
+          skill_set: document.getElementById('editSkillset').value.split(',').map(s=>s.trim()).filter(Boolean),
+          services_provided: document.getElementById('editServices').value.split(',').map(s=>s.trim()).filter(Boolean)
+        };
+        const picVal = document.getElementById('editPic').value.trim();
+        if (picVal) {
+          updated.pic = picVal;
+        }
+        const { error } = await supabase
+          .from('profiles')
+          .update(updated)
+          .eq('username', profile.username);
+        if (error) {
+          alert('Failed to update profile: ' + error.message);
+        } else {
+          alert('Profile updated!');
+          // Reload profile
+          loadProfile();
+        }
+      };
     }
 
     async function loadProfile() {
