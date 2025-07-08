@@ -328,8 +328,8 @@
           pic: profile.pic || `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random()*10)+1}.jpg`,
           skillset: Array.isArray(profile.skill_set) ? profile.skill_set : (profile.skill_set ? profile.skill_set.split(',').map(s=>s.trim()) : []),
           services: Array.isArray(profile.services_provided) ? profile.services_provided : (profile.services_provided ? profile.services_provided.split(',').map(s=>s.trim()) : []),
-          merit: profile.merit || Math.floor(Math.random()*21)+80,
-          rating: profile.rating || (Math.random()*1.5+3.5).toFixed(1)
+          merit: typeof profile.merit === 'number' ? profile.merit : 100,
+          rating: typeof profile.rating === 'number' ? profile.rating : 0
         }));
 
       filterAndSortProfiles();
@@ -350,7 +350,7 @@
         card.onclick = (e) => {
           // Only trigger if not clicking DM button
           if (e.target.classList.contains('dm-btn')) return;
-          window.location.href = `profile.html?user=${profile.username}`;
+          window.location.href = `/profile/profile.html?user=${profile.username}`;
         };
         card.innerHTML = `
           <img class="profile-pic" src="${profile.pic}" alt="${profile.name}">
@@ -370,9 +370,8 @@
     function startDM(username) {
       let currentUser = localStorage.getItem('currentUser');
       if (!currentUser) {
-        currentUser = prompt('Enter your username:');
-        if (!currentUser) return;
-        localStorage.setItem('currentUser', currentUser);
+        document.getElementById('profilesGrid').innerHTML = '<div style="color:#b39ddb;text-align:center;font-size:1.2rem;">Please log in to start a DM.</div>';
+        return;
       }
       // Go to messages.html with the other user
       window.location.href = `messages.html?user=${username}`;
@@ -415,9 +414,8 @@
       e.preventDefault();
       let currentUser = localStorage.getItem('currentUser');
       if (!currentUser) {
-        currentUser = prompt('Enter your username:');
-        if (!currentUser) return;
-        localStorage.setItem('currentUser', currentUser);
+        alert('Please log in to view your messages.');
+        return;
       }
       window.location.href = `messages.html`;
     });
