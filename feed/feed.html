@@ -76,6 +76,26 @@
       background: #b01e33;
       transform: translateY(-1px);
     }
+    .project-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+      transition: background 0.18s, transform 0.18s;
+      z-index: 11;
+    }
+    .project-btn:hover {
+      background: #1565c0;
+      transform: translateY(-1px);
+    }
     h2 {
       text-align: center;
       color: #5e548e;
@@ -236,6 +256,7 @@
 </head>
 <body>
   <button class="logout-btn" id="logoutBtn">Logout</button>
+  <button class="project-btn" id="projectBtn">Project</button>
   <div class="feed-container">
     <h1>
       <a href="#" id="messagesLink" class="messages-btn">
@@ -436,6 +457,10 @@
       localStorage.removeItem('currentUser');
       // Redirect to login page
       window.location.href = '/index.html';
+    });
+
+    document.getElementById('projectBtn').addEventListener('click', function() {
+      window.location.href = '../projects/projects.html';
     });
   </script>
 </body>
