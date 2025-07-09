@@ -230,7 +230,7 @@
             <div class="profile-name">${name}</div>
             <div class="profile-username">
               @${username}
-              <button onclick="window.location.href = '/feed/messages.html?user=${username}'">DM</button>
+              <button onclick="startDM('${username}')">DM</button>
               <button onclick="alert('Connection request sent!')">Connect</button>
               <button onclick="window.location.href = '/projects/initiate_project.html?user=${username}'">Invite to Collaborate</button>
               ${editBtn}
@@ -320,6 +320,18 @@
           loadProfile();
         }
       };
+    }
+
+    function startDM(targetUser) {
+      let currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        currentUser = prompt('Enter your username:');
+        if (!currentUser) return;
+        localStorage.setItem('currentUser', currentUser);
+      }
+      // Optionally, create a chat record in DB here if needed (for chat list)
+      // Redirect to messages page with target user
+      window.location.href = '/feed/messages.html?user=' + encodeURIComponent(targetUser);
     }
 
     async function loadProfile() {
