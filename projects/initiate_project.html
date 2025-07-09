@@ -29,16 +29,46 @@
     </form>
     <div id="resultMsg" style="margin-top:18px;color:#5e548e;"></div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
+    // Supabase client setup
+    const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
     // Get collaborator from query param
     const params = new URLSearchParams(window.location.search);
     const user = params.get('user') || '';
     document.getElementById('collabUser').value = user;
-    document.getElementById('initiateForm').onsubmit = function(e) {
+
+    document.getElementById('initiateForm').onsubmit = async function(e) {
       e.preventDefault();
-      // For now, just show a message
-      document.getElementById('resultMsg').textContent = 'Project invite sent to ' + user + '!';
-      this.reset();
+      const to_user = user;
+      const from_user = localStorage.getItem('currentUser') || '';
+      const project_title = document.getElementById('projectTitle').value.trim();
+      const project_description = document.getElementById('projectDesc').value.trim();
+      if (!from_user || !to_user || !project_title || !project_description) {
+        document.getElementById('resultMsg').textContent = 'All fields are required.';
+        return;
+      }
+      // Insert into invitations table
+      const { error } = await supabase
+        .from('invitations')
+        .insert([
+          {
+            from_user,
+            to_user,
+            project_title,
+            project_description,
+            status: 'pending'
+          }
+        ]);
+      if (!error) {
+        document.getElementById('resultMsg').textContent = 'Project invite sent to ' + to_user + '!';
+        this.reset();
+      } else {
+        document.getElementById('resultMsg').textContent = 'Failed to send invite: ' + error.message;
+      }
     };
   </script>
 </body>
