@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Invitations | Barter Your Skills</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { background: #f8fafc; font-family: 'Roboto', Arial, sans-serif; margin: 0; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 18px #b39ddb22; padding: 32px 24px; }
+    h1 { color: #5e548e; text-align: center; font-size: 2rem; margin-bottom: 24px; }
+    .invite { background: #f8fafc; border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; border: 1.5px solid #e0c3fc; }
+    .invite .from { font-weight: 700; color: #5e548e; }
+    .invite .project { margin: 6px 0 8px 0; }
+    .invite .desc { color: #22223b; }
+    .invite .status { margin-top: 12px; color: #888; font-size: 0.95em; }
+    .back-btn { background: #5e548e; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-bottom: 24px; display: inline-block; }
+    .back-btn:hover { background: #7c6cc5; }
+    .actions { margin-top: 14px; }
+    .accept-btn { background: #43a047; color: #fff; border: none; border-radius: 7px; padding: 7px 18px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-right: 10px; transition: background 0.18s; }
+    .accept-btn:hover { background: #388e3c; }
+    .decline-btn { background: #d7263d; color: #fff; border: none; border-radius: 7px; padding: 7px 18px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.18s; }
+    .decline-btn:hover { background: #b01e33; }
+    .status-msg { margin-top: 14px; font-weight: 600; font-size: 1.05rem; padding: 8px 0; border-radius: 6px; text-align: center; }
+    .status-msg.accepted { color: #388e3c; background: #e8f5e9; }
+    .status-msg.declined { color: #b01e33; background: #ffebee; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="back-btn" onclick="window.location.href='feed.html'">&larr; Back to Feed</button>
+    <h1>Your Collaboration Invitations</h1>
+    <div id="invitationsList"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // Supabase client setup
+    const supabaseUrl = 'https://uyifmxtmfqlojodlrmzu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5aWZteHRtZnFsb2pvZGxybXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1OTkzOTYsImV4cCI6MjA2NzE3NTM5Nn0.flAP_CN8tbXFLlIYJ6QkZapHC_ceqgnAb7XEIJ0IkyY';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    window.acceptInvite = async function(id) {
+      const { error } = await supabase
+        .from('invitations')
+        .update({ status: 'accepted' })
+        .eq('id', id);
+      if (!error) {
+        fetchInvitations();
+        alert('You accepted the invitation!');
+      } else {
+        alert('Failed to accept invitation.');
+      }
+    };
+    window.declineInvite = async function(id) {
+      const { error } = await supabase
+        .from('invitations')
+        .update({ status: 'declined' })
+        .eq('id', id);
+      if (!error) {
+        fetchInvitations();
+        alert('You declined the invitation!');
+      } else {
+        alert('Failed to decline invitation.');
+      }
+    };
+
+    async function fetchInvitations() {
+      let currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        document.getElementById('invitationsList').innerHTML = '<div style="color:#b39ddb;text-align:center;font-size:1.1rem;">Please log in to view your invitations.</div>';
+        return;
+      }
+      const trimmedUser = currentUser.trim();
+      const { data, error } = await supabase
+        .from('invitations')
+        .select('*')
+        .eq('to_user', trimmedUser)
+        .order('created_at', { ascending: false });
+      const invitationsList = document.getElementById('invitationsList');
+      if (error) {
+        invitationsList.innerHTML = '<div style="color:red;">Failed to load invitations.</div>';
+        return;
+      }
+      if (!data || data.length === 0) {
+        invitationsList.innerHTML = '<div style="color:#b39ddb;">No invitations at the moment.</div>';
+        return;
+      }
+      invitationsList.innerHTML = data.map((inv) => {
+        const from = inv.from_user || 'Unknown';
+        const title = inv.project_title || 'No title';
+        const desc = inv.project_description || '';
+        const status = inv.status ? inv.status : 'pending';
+        let actionBtns = '';
+        if (status === 'pending') {
+          actionBtns = `
+            <div class="actions">
+              <button class="accept-btn" onclick="acceptInvite('${inv.id}')">Accept</button>
+              <button class="decline-btn" onclick="declineInvite('${inv.id}')">Decline</button>
+            </div>
+          `;
+        } else if (status === 'accepted') {
+          actionBtns = `<div class=\"status-msg accepted\">Invitation was accepted.</div>`;
+        } else if (status === 'declined') {
+          actionBtns = `<div class=\"status-msg declined\">Invitation was declined.</div>`;
+        }
+        return `
+          <div class="invite">
+            <div class="from">From: @${from}</div>
+            <div class="project"><b>Project:</b> ${title}</div>
+            <div class="desc">${desc}</div>
+            <div class="status">Status: ${status}</div>
+            ${actionBtns}
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.addEventListener('DOMContentLoaded', fetchInvitations);
+  </script>
+</body>
+</html>

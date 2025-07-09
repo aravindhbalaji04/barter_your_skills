@@ -276,6 +276,7 @@
 </head>
 <body>
   <button class="logout-btn" id="logoutBtn">Logout</button>
+  <button class="invitation-btn" id="invitationBtn" style="position:absolute;top:24px;left:120px;background:#ff9800;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.95rem;font-weight:600;cursor:pointer;box-shadow:0 2px 8px #ff980022;z-index:11;">Invitations</button>
   <button class="project-btn" id="projectBtn">Project</button>
   <button class="myprofile-btn" id="myProfileBtn">My Profile</button>
   <div class="feed-container">
@@ -491,6 +492,10 @@
         return;
       }
       window.location.href = `/profile/profile.html?user=${encodeURIComponent(currentUser)}`;
+    });
+
+    document.getElementById('invitationBtn').addEventListener('click', function() {
+      window.location.href = 'invitation.html';
     });
   </script>
 </body>
