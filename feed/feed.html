@@ -303,13 +303,6 @@
         <label for="skillSelect">Skill</label>
         <select id="skillSelect">
           <option value="">All Skills</option>
-          <option value="Web Development">Web Development</option>
-          <option value="UI/UX Design">UI/UX Design</option>
-          <option value="JavaScript">JavaScript</option>
-          <option value="Photoshop">Photoshop</option>
-          <option value="SEO">SEO</option>
-          <option value="Flutter">Flutter</option>
-          <option value="Excel">Excel</option>
         </select>
         <div class="sort-section">
           <h2>Sort By</h2>
@@ -375,6 +368,22 @@
           rating: typeof profile.rating === 'number' ? profile.rating : 0
         }));
 
+      // Populate unique, case-insensitive services from all profiles
+      const allServices = profiles.flatMap(profile => profile.services);
+      const uniqueServicesMap = {};
+      allServices.forEach(service => {
+        if (service) {
+          const key = service.trim().toLowerCase();
+          if (!uniqueServicesMap[key]) {
+            uniqueServicesMap[key] = service.trim();
+          }
+        }
+      });
+      // Capitalize for display
+      const uniqueServices = Object.values(uniqueServicesMap).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+      // Clear and repopulate serviceSelect
+      serviceSelect.innerHTML = '<option value="">All Services</option>' + uniqueServices.map(service => `<option value="${service}">${service}</option>`).join('');
+
       filterAndSortProfiles();
     }
     
@@ -432,8 +441,10 @@
           profile.username.toLowerCase().includes(query) ||
           profile.skillset.some(skill => skill.toLowerCase().includes(query)) ||
           profile.services.some(service => service.toLowerCase().includes(query));
-        const matchesService = !selectedService || profile.services.includes(selectedService);
-        const matchesSkill = !selectedSkill || profile.skillset.includes(selectedSkill);
+      // Case-insensitive service filter
+      const matchesService = !selectedService || profile.services.some(service => service.toLowerCase() === selectedService.toLowerCase());
+        // Case-insensitive skill filter
+        const matchesSkill = !selectedSkill || profile.skillset.some(skill => skill.toLowerCase() === selectedSkill.toLowerCase());
         return matchesQuery && matchesService && matchesSkill;
       });
       if (sortBy === 'merit') {
@@ -497,6 +508,36 @@
     document.getElementById('invitationBtn').addEventListener('click', function() {
       window.location.href = 'invitation.html';
     });
+
+    async function populateSkillsDropdown() {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('skill_set');
+      if (error) return;
+      const skillMap = new Map();
+      (data || []).forEach(profile => {
+        if (Array.isArray(profile.skill_set)) {
+          profile.skill_set.forEach(skill => {
+            const key = skill.trim().toLowerCase();
+            if (key) skillMap.set(key, skill.trim());
+          });
+        } else if (typeof profile.skill_set === 'string') {
+          profile.skill_set.split(',').forEach(skill => {
+            const key = skill.trim().toLowerCase();
+            if (key) skillMap.set(key, skill.trim());
+          });
+        }
+      });
+      const skillSelect = document.getElementById('skillSelect');
+      skillSelect.innerHTML = '<option value="">All Skills</option>';
+      Array.from(skillMap.values()).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'})).forEach(skill => {
+        const opt = document.createElement('option');
+        opt.value = skill;
+        opt.textContent = skill.charAt(0).toUpperCase() + skill.slice(1);
+        skillSelect.appendChild(opt);
+      });
+    }
+    window.addEventListener('DOMContentLoaded', populateSkillsDropdown);
   </script>
 </body>
 </html>
